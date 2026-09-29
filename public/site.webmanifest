@@ -1,0 +1,32 @@
+{
+  "name": "MobilExpertX — Buy, Sell, Repair Your Phone",
+  "short_name": "MobilExpertX",
+  "description": "Buy premium smartphones, sell your old device, get expert repairs, and shop genuine accessories.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#FFFFFF",
+  "theme_color": "#08090D",
+  "categories": ["shopping", "business"],
+  "lang": "en-IN",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    { "name": "Shop phones", "url": "/shop" },
+    { "name": "Sell my phone", "url": "/sell-phone" },
+    { "name": "Book a repair", "url": "/repair" }
+  ]
+}

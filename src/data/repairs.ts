@@ -1,0 +1,211 @@
+import type { RepairService } from '@/types';
+
+/**
+ * Repair catalogue. `icon` maps to a key in
+ * `src/components/repair/RepairIcon.tsx` so the visual language stays
+ * consistent — swap for real photography by adding an `image` field later.
+ */
+export const repairServices: RepairService[] = [
+  {
+    id: 'r-screen',
+    slug: 'screen-replacement',
+    name: 'Screen Replacement',
+    shortName: 'Screen',
+    description: 'Cracked, bleeding or unresponsive displays replaced with a genuine-grade panel.',
+    longDescription:
+      'We replace cracked, bleeding or completely unresponsive displays with a genuine-grade OLED or LCD assembly. Every panel is tested for touch accuracy, colour uniformity and true tone before it is fitted, and calibrated so auto-brightness and the ambient light sensor behave exactly as they did originally.',
+    startingPrice: 249900,
+    turnaround: 'Same day · 3–4 hours',
+    icon: 'screen',
+    includes: [
+      'Genuine-grade panel',
+      'Water-resistance seal',
+      'True-tone calibration',
+      '90-day display warranty',
+    ],
+    popular: true,
+    warranty: '90 days on the fitted panel',
+    devices: ['iPhone', 'Samsung', 'Xiaomi', 'OnePlus', 'Realme', 'Vivo', 'Oppo', 'Google'],
+  },
+  {
+    id: 'r-battery',
+    slug: 'battery-replacement',
+    name: 'Battery Replacement',
+    shortName: 'Battery',
+    description: 'Fast-draining or swollen batteries replaced with a health-verified genuine cell.',
+    longDescription:
+      'A battery that drops 30% overnight is usually the single most cost-effective repair. We fit genuine or OEM-grade cells, calibrate the charge cycle so Android and iOS report accurate health, and check for the swelling or heat signatures that cause sudden shutdowns.',
+    startingPrice: 129900,
+    turnaround: 'Same day · 1–2 hours',
+    icon: 'battery',
+    includes: [
+      'Health-verified cell',
+      'Charge-cycle calibration',
+      'Water-resistance seal',
+      '6-month battery warranty',
+    ],
+    popular: true,
+    warranty: '6 months on the fitted cell',
+    devices: ['iPhone', 'Samsung', 'Xiaomi', 'OnePlus', 'Realme', 'Vivo', 'Oppo', 'Google'],
+  },
+  {
+    id: 'r-charging',
+    slug: 'charging-port-repair',
+    name: 'Charging Port Repair',
+    shortName: 'Charging Port',
+    description: 'Loose, bent or dead ports re-soldered or replaced at component level.',
+    longDescription:
+      'If your phone only charges when the cable is held at an angle, the port itself is usually fine — the connector pins are just worn. We clean the port, re-solder or replace the flex assembly under a microscope, and reinforce the board so the problem does not come back in three months.',
+    startingPrice: 99900,
+    turnaround: 'Same day · 2–3 hours',
+    icon: 'charging',
+    includes: [
+      'Microscope-level soldering',
+      'Port or flex replacement',
+      'Fast-charge test',
+      '3-month warranty',
+    ],
+    warranty: '3 months on the repair',
+    devices: ['iPhone', 'Samsung', 'Xiaomi', 'OnePlus', 'Realme', 'Vivo', 'Oppo', 'Google'],
+  },
+  {
+    id: 'r-speaker',
+    slug: 'speaker-repair',
+    name: 'Speaker Repair',
+    shortName: 'Speaker',
+    description: 'Distorted, crackling or silent speakers restored to full output.',
+    longDescription:
+      'Crackling at high volume is almost always a failing speaker driver rather than a software fault. We replace the affected module, tune the EQ curve back to factory and test across the full frequency range on a reference rig.',
+    startingPrice: 89900,
+    turnaround: 'Same day · 2–3 hours',
+    icon: 'speaker',
+    includes: ['Speaker module replacement', 'EQ re-tuning', 'Full-range test', '3-month warranty'],
+    warranty: '3 months on the repair',
+    devices: ['iPhone', 'Samsung', 'Xiaomi', 'OnePlus', 'Realme', 'Vivo', 'Oppo', 'Google'],
+  },
+  {
+    id: 'r-microphone',
+    slug: 'microphone-repair',
+    name: 'Microphone Repair',
+    shortName: 'Microphone',
+    description: 'Call or recording audio cutting out? Primary or secondary mic replaced.',
+    longDescription:
+      'If the other person cannot hear you on calls but your speaker works fine, it is a microphone fault. We replace the primary or secondary mic mesh, verify the audio path end-to-end, and re-seal the chassis so the ingress rating is preserved.',
+    startingPrice: 79900,
+    turnaround: 'Same day · 1–2 hours',
+    icon: 'microphone',
+    includes: ['Primary or secondary mic', 'Audio path test', 'Chassis re-seal', '3-month warranty'],
+    warranty: '3 months on the repair',
+    devices: ['iPhone', 'Samsung', 'Xiaomi', 'OnePlus', 'Realme', 'Vivo', 'Oppo', 'Google'],
+  },
+  {
+    id: 'r-camera',
+    slug: 'camera-repair',
+    name: 'Camera Repair',
+    shortName: 'Camera',
+    description: 'Blurry, rattling or broken camera modules replaced and recalibrated.',
+    longDescription:
+      'A rattling camera is usually the OIS gimbal failing, which degrades your photos long before the module dies. We replace the module, recalibrate optical stabilisation, and re-apply the lens seal so you do not get moisture ingress a few weeks later.',
+    startingPrice: 199900,
+    turnaround: 'Same day · 3-4 hours',
+    icon: 'camera',
+    includes: ['Module replacement', 'OIS recalibration', 'Lens seal restore', '90-day warranty'],
+    warranty: '90 days on the fitted module',
+    devices: ['iPhone', 'Samsung', 'Xiaomi', 'OnePlus', 'Realme', 'Vivo', 'Oppo', 'Google'],
+  },
+  {
+    id: 'r-backglass',
+    slug: 'back-glass-replacement',
+    name: 'Back Glass Replacement',
+    shortName: 'Back Glass',
+    description: 'Shattered back panels replaced with colour-matched glass and frame.',
+    longDescription:
+      'A cracked back glass looks cosmetic but it exposes the internals to dust and moisture. We laser-separate the shattered panel, transfer the camera rings and wireless coil, and fit a colour-matched replacement so the phone looks factory-fresh again.',
+    startingPrice: 349900,
+    turnaround: '1-2 days',
+    icon: 'backglass',
+    includes: ['Colour-matched glass', 'Camera ring transfer', 'Wireless-coil preservation', '3-month warranty'],
+    warranty: '3 months on the repair',
+    devices: ['iPhone', 'Samsung', 'Xiaomi', 'OnePlus', 'Realme'],
+  },
+  {
+    id: 'r-water',
+    slug: 'water-damage-repair',
+    name: 'Water Damage Repair',
+    shortName: 'Water Damage',
+    description: 'Corrosion diagnosis, board cleaning and component-level recovery.',
+    longDescription:
+      'Liquid damage is graded, not binary. We strip the board, ultrasonic-clean it, inspect under microscopy and quote for the specific corroded components before doing any work. A large share of water-damaged phones we see are fully recoverable — we will always tell you honestly if yours is not.',
+    startingPrice: 449900,
+    turnaround: '2-4 days after inspection',
+    icon: 'water',
+    includes: ['Ultrasonic board clean', 'Microscopic corrosion report', 'Upfront fixed quote', '3-month warranty'],
+    warranty: '3 months on the repair',
+    devices: ['iPhone', 'Samsung', 'Xiaomi', 'OnePlus', 'Realme', 'Vivo', 'Oppo', 'Google'],
+  },
+  {
+    id: 'r-software',
+    slug: 'software-issues',
+    name: 'Software Issues',
+    shortName: 'Software',
+    description: 'Boot loops, stuck updates, viruses and persistent storage errors fixed.',
+    longDescription:
+      'Stuck on a logo, failed updates, boot loops, suspicious pop-ups or a phone that is out of storage. We diagnose at the software level first, preserve your data wherever technically possible, and only escalate to a reinstall if the firmware itself is corrupted.',
+    startingPrice: 49900,
+    turnaround: 'Same day · 1-3 hours',
+    icon: 'software',
+    includes: ['Full diagnostic report', 'Data-preserving fix', 'Malware removal', 'Free re-check'],
+    warranty: '7 days on the fix',
+    devices: ['iPhone', 'Samsung', 'Xiaomi', 'OnePlus', 'Realme', 'Vivo', 'Oppo', 'Google'],
+  },
+  {
+    id: 'r-motherboard',
+    slug: 'motherboard-ic-repair',
+    name: 'Motherboard / IC Repair',
+    shortName: 'Motherboard',
+    description: 'No power, no signal or backlight failure fixed at board level.',
+    longDescription:
+      'The most advanced repair we offer. For no-power, no-signal, backlight and charging-IC failures we work at the board level under a microscope — reballing CPU and storage ICs, replacing charge and backlight drivers, and re-balling rather than replacing whole boards wherever possible.',
+    startingPrice: 899900,
+    turnaround: '3-5 days',
+    icon: 'chip',
+    includes: ['Microscope board-level work', 'IC reballing / replacement', 'Post-repair stress test', '6-month warranty'],
+    warranty: '6 months on the board work',
+    devices: ['iPhone', 'Samsung', 'Xiaomi', 'OnePlus', 'Realme'],
+  },
+  {
+    id: 'r-diagnostics',
+    slug: 'general-diagnostics',
+    name: 'General Diagnostics',
+    shortName: 'Diagnostics',
+    description: 'Not sure what is wrong? Get a straight answer for a flat fee.',
+    longDescription:
+      'A straightforward health check across hardware, battery, storage, software and thermal performance. You get a written report with photographs of anything we find, an honest assessment of whether repair or replacement makes financial sense, and the fee is deducted from the repair if you go ahead.',
+    startingPrice: 29900,
+    turnaround: 'Same day · 1 hour',
+    icon: 'diagnostics',
+    includes: ['42-point inspection', 'Written report with photos', 'Repair-vs-replace advice', 'Fee waived on repair'],
+    popular: true,
+    warranty: 'N/A — diagnostic service',
+    devices: ['iPhone', 'Samsung', 'Xiaomi', 'OnePlus', 'Realme', 'Vivo', 'Oppo', 'Google', 'Nothing', 'Motorola'],
+  },
+];
+
+/** Flat list of every brand accepted across the repair desk. */
+export const repairBrands = [
+  'Apple', 'Samsung', 'Xiaomi', 'OnePlus', 'Realme',
+  'Vivo', 'Oppo', 'Google', 'Nothing', 'Motorola',
+];
+
+export const repairBrandModels: Record<string, string[]> = {
+  Apple: ['iPhone 15 Pro', 'iPhone 15', 'iPhone 14', 'iPhone 13', 'iPhone 12', 'iPhone 11', 'iPhone SE (3rd gen)'],
+  Samsung: ['Galaxy S24 Ultra', 'Galaxy S24', 'Galaxy S23', 'Galaxy A55', 'Galaxy A35', 'Galaxy M35', 'Galaxy Z Flip 5'],
+  Xiaomi: ['Xiaomi 14', 'Redmi Note 13 Pro', 'Redmi 13', 'Poco X6 Pro', 'Poco C55'],
+  OnePlus: ['OnePlus 12', 'Nord 4', 'Nord CE 3', 'OnePlus 11R'],
+  Realme: ['12 Pro+ 5G', '12 5G', 'Narzo 70', 'Narzo 60', 'C55'],
+  Vivo: ['V30 Pro', 'V29', 'Y200', 'T3x'],
+  Oppo: ['Reno12', 'Reno11', 'A78', 'F27'],
+  Google: ['Pixel 8 Pro', 'Pixel 8a', 'Pixel 7a', 'Pixel 6a'],
+  Nothing: ['Phone (2)', 'Phone (2a)', 'Phone (1)'],
+  Motorola: ['edge 50 ultra', 'edge 50 fusion', 'Razr 40', 'G84'],
+};
