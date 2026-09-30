@@ -1,6 +1,6 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { MessageCircle, Phone, Send } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
@@ -13,7 +13,6 @@ import { buildTelUrl, buildWhatsAppUrl, siteConfig, whatsappMessages } from '@/l
 import { formatPrice, todayISO } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import type { RepairBooking, RepairService } from '@/types';
-
 const TIME_SLOTS = [
   '10:00 AM – 11:30 AM',
   '11:30 AM – 1:00 PM',
@@ -22,7 +21,6 @@ const TIME_SLOTS = [
   '4:00 PM – 5:30 PM',
   '5:30 PM – 7:00 PM',
 ];
-
 /**
  * Book-a-repair form.
  *
@@ -48,7 +46,6 @@ export function RepairForm({ service }: { service?: RepairService }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [booking, setBooking] = useState<RepairBooking | null>(null);
-
   const set = (key: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => {
@@ -58,9 +55,7 @@ export function RepairForm({ service }: { service?: RepairService }) {
       return next;
     });
   };
-
   const models = repairBrandModels[form.brand] ?? [];
-
   const submit = async () => {
     const payload = {
       ...form,
@@ -68,7 +63,6 @@ export function RepairForm({ service }: { service?: RepairService }) {
       notes: form.notes || undefined,
       serviceSlug: service?.slug,
     };
-
     const parsed = repairBookingSchema.safeParse(payload);
     if (!parsed.success) {
       const next: Record<string, string> = {};
@@ -82,7 +76,6 @@ export function RepairForm({ service }: { service?: RepairService }) {
       document.getElementById(firstKey)?.focus();
       return;
     }
-
     setSubmitting(true);
     setErrors({});
     try {
@@ -106,7 +99,6 @@ export function RepairForm({ service }: { service?: RepairService }) {
       setSubmitting(false);
     }
   };
-
   const whatsappBody = [
     service ? `Service: ${service.name}` : 'Service: not sure yet',
     `Device: ${form.brand} ${form.model}`,
@@ -115,11 +107,10 @@ export function RepairForm({ service }: { service?: RepairService }) {
   ]
     .filter(Boolean)
     .join('\n');
-
   // ── Success ─────────────────────────────────────────────────────────────
   if (booking) {
     return (
-      <motion.div
+      <m.div
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
         className="rounded-3xl border border-emerald-500/25 bg-white p-8 text-center shadow-card sm:p-10"
@@ -137,7 +128,6 @@ export function RepairForm({ service }: { service?: RepairService }) {
         <p className="mt-4 inline-flex rounded-full bg-surface-100 px-3.5 py-1.5 font-mono text-sm font-semibold text-ink-800">
           {booking.reference}
         </p>
-
         <div className="mt-7 grid gap-2.5 sm:grid-cols-2">
           <a
             href={buildWhatsAppUrl(siteConfig.contact.whatsapp, whatsappMessages.bookRepair(service?.name, `${form.brand} ${form.model}`))}
@@ -156,10 +146,9 @@ export function RepairForm({ service }: { service?: RepairService }) {
             Call the repair desk
           </a>
         </div>
-      </motion.div>
+      </m.div>
     );
   }
-
   return (
     <form
       onSubmit={(e) => {
@@ -177,7 +166,6 @@ export function RepairForm({ service }: { service?: RepairService }) {
           ? `Tell us about your device and we will confirm the exact quote for ${service.name.toLowerCase()}.`
           : 'Not sure what is wrong? Book a general diagnostics appointment instead.'}
       </p>
-
       <div className="mt-7 space-y-5">
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Your name" htmlFor="name" error={errors.name} required>
@@ -209,7 +197,6 @@ export function RepairForm({ service }: { service?: RepairService }) {
             />
           </Field>
         </div>
-
         <Field label="Email (optional)" htmlFor="email" error={errors.email}>
           <Input
             id="email"
@@ -221,7 +208,6 @@ export function RepairForm({ service }: { service?: RepairService }) {
             error={errors.email}
           />
         </Field>
-
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Device brand" htmlFor="brand" error={errors.brand} required>
             <Select
@@ -250,7 +236,6 @@ export function RepairForm({ service }: { service?: RepairService }) {
               ))}
             </Select>
           </Field>
-
           <Field label="Device model" htmlFor="model" error={errors.model} required>
             <Select
               id="model"
@@ -266,7 +251,6 @@ export function RepairForm({ service }: { service?: RepairService }) {
             </Select>
           </Field>
         </div>
-
         <Field
           label="What is the problem?"
           htmlFor="problem"
@@ -283,7 +267,6 @@ export function RepairForm({ service }: { service?: RepairService }) {
             error={errors.problem}
           />
         </Field>
-
         <div className="grid gap-5 sm:grid-cols-2">
           <Field
             label="Preferred date"
@@ -300,7 +283,6 @@ export function RepairForm({ service }: { service?: RepairService }) {
               error={errors.preferredDate}
             />
           </Field>
-
           <Field
             label="Preferred time"
             htmlFor="preferredTime"
@@ -321,7 +303,6 @@ export function RepairForm({ service }: { service?: RepairService }) {
             </Select>
           </Field>
         </div>
-
         <fieldset>
           <legend className="mb-2.5 text-[13px] font-semibold text-ink-800">
             How will you hand it over?
@@ -357,7 +338,6 @@ export function RepairForm({ service }: { service?: RepairService }) {
             ))}
           </div>
         </fieldset>
-
         <Field label="Anything else? (optional)" htmlFor="notes">
           <Textarea
             id="notes"
@@ -368,7 +348,6 @@ export function RepairForm({ service }: { service?: RepairService }) {
           />
         </Field>
       </div>
-
       <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
         <Button type="submit" size="lg" loading={submitting} loadingText="Booking…" className="flex-1">
           Book this repair slot
@@ -383,7 +362,6 @@ export function RepairForm({ service }: { service?: RepairService }) {
           Book on WhatsApp
         </a>
       </div>
-
       {service && (
         <p className="mt-4 text-xs text-ink-500">
           Repairs for {service.name} start at {formatPrice(service.startingPrice)} ·

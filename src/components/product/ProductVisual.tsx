@@ -160,7 +160,7 @@ function PhoneRender({
               />
               <div
                 className="absolute -left-6 bottom-6 h-16 w-16 rounded-full opacity-40 blur-2xl"
-                style={{ background: '#7C3AED' }}
+                style={{ background: '#0D9488' }}
                 aria-hidden="true"
               />
 
@@ -173,7 +173,7 @@ function PhoneRender({
                     style={{
                       background:
                         i === 0
-                          ? `linear-gradient(140deg, ${accent}, #7C3AED)`
+                          ? `linear-gradient(140deg, ${accent}, #0D9488)`
                           : dark
                             ? 'rgba(255,255,255,0.12)'
                             : 'rgba(11,16,32,0.08)',
@@ -202,13 +202,55 @@ function PhoneRender({
   );
 }
 
-function AccessoryRender({ accent, name }: { accent: string; name: string }) {
+interface AccessoryRenderProps {
+  accent: string;
+  name: string;
+  /**
+   * Uploaded photo. When present the real image is rendered instead of the
+   * generated SVG -- without this, an admin uploading a product photo would
+   * see no change on the storefront.
+   */
+  image?: string;
+  alt?: string;
+  className?: string;
+  priority?: boolean;
+}
+
+function AccessoryRender({
+  accent,
+  name,
+  image,
+  alt,
+  className,
+  priority,
+}: AccessoryRenderProps) {
+  if (image) {
+    return (
+      <div className={cn('relative h-full w-full overflow-hidden bg-surface-50', className)}>
+        <Image
+          src={image}
+          alt={alt || name}
+          fill
+          priority={priority}
+          loading={priority ? undefined : 'lazy'}
+          sizes="(max-width: 640px) 80vw, (max-width: 1024px) 45vw, 320px"
+          className="object-contain p-4"
+        />
+      </div>
+    );
+  }
+
   const isWatch = /watch/i.test(name);
   const isEarbuds = /earbud|earphone/i.test(name);
   const isCable = /cable/i.test(name);
 
   return (
-    <div className="relative flex h-full w-full items-center justify-center [perspective:900px]">
+    <div
+      className={cn(
+        'relative flex h-full w-full items-center justify-center [perspective:900px]',
+        className,
+      )}
+    >
       <div
         className="absolute inset-[12%] rounded-full opacity-25 blur-3xl"
         style={{ background: accent }}
@@ -257,7 +299,7 @@ function AccessoryRender({ accent, name }: { accent: string; name: string }) {
           <div className="relative h-[46%] w-[80%] max-w-[230px]">
             <span
               className="absolute inset-x-0 top-1/2 h-5 -translate-y-1/2 rounded-full"
-              style={{ background: `linear-gradient(90deg, ${accent}, #7C3AED)` }}
+              style={{ background: `linear-gradient(90deg, ${accent}, #0D9488)` }}
             />
             <span className="absolute left-[-6%] top-1/2 h-8 w-8 -translate-y-1/2 rounded-md bg-ink-900" />
             <span className="absolute right-[-6%] top-1/2 h-8 w-8 -translate-y-1/2 rounded-md bg-ink-900" />

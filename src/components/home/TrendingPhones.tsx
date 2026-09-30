@@ -1,7 +1,7 @@
 'use client';
 
+import { m } from 'framer-motion';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { ProductCard } from '@/components/product/ProductCard';
@@ -12,16 +12,13 @@ import { products } from '@/data/products';
 import { fadeUp, stagger, staggerItem } from '@/lib/motion';
 import { usePrefersReducedMotion } from '@/components/providers/MotionProvider';
 import type { Product } from '@/types';
-
 const TABS = [
   { id: 'new', label: 'New' },
   { id: 'refurbished', label: 'Refurbished' },
   { id: 'best-seller', label: 'Best Sellers' },
   { id: 'deal', label: 'Deals' },
 ] as const;
-
 type TabId = (typeof TABS)[number]['id'];
-
 /**
  * "Trending Phones" — tabbed product rail.
  *
@@ -32,7 +29,6 @@ type TabId = (typeof TABS)[number]['id'];
 export function TrendingPhones() {
   const [tab, setTab] = useState<TabId>('new');
   const [quickView, setQuickView] = useState<Product | null>(null);
-
   const visible = useMemo(() => {
     const byTag = (tag: (typeof TABS)[number]['id']) =>
       products.filter((p) => p.tags.includes(tag));
@@ -40,7 +36,6 @@ export function TrendingPhones() {
     // fallback keeps the section populated if the catalogue is trimmed.
     return byTag(tab).length ? byTag(tab) : products.slice(0, 8);
   }, [tab]);
-
   return (
     <section className="section bg-white" aria-labelledby="trending-heading">
       <div className="container">
@@ -56,7 +51,6 @@ export function TrendingPhones() {
             </ButtonLink>
           }
         />
-
         {/* Tabs */}
         <div
           role="tablist"
@@ -75,7 +69,7 @@ export function TrendingPhones() {
                 className="relative shrink-0 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
               >
                 {selected && (
-                  <motion.span
+                  <m.span
                     layoutId="trending-tab"
                     className="absolute inset-0 rounded-xl bg-ink-900"
                     transition={{ type: 'spring', stiffness: 380, damping: 32 }}
@@ -94,9 +88,8 @@ export function TrendingPhones() {
             );
           })}
         </div>
-
         {/* Grid — rail on mobile, grid from sm up */}
-        <motion.div
+        <m.div
           key={tab}
           variants={stagger(0.06)}
           initial="hidden"
@@ -105,7 +98,7 @@ export function TrendingPhones() {
           className="scroll-rail mask-fade-r mt-7 grid grid-cols-2 gap-4 overflow-visible sm:gap-5 lg:grid-cols-4"
         >
           {visible.slice(0, 8).map((product, i) => (
-            <motion.div
+            <m.div
               key={product.id}
               variants={staggerItem}
               className="w-[68vw] shrink-0 sm:w-auto"
@@ -115,10 +108,9 @@ export function TrendingPhones() {
                 onQuickView={setQuickView}
                 priority={i < 4}
               />
-            </motion.div>
+            </m.div>
           ))}
-        </motion.div>
-
+        </m.div>
         <div className="mt-8 text-center sm:hidden">
           <ButtonLink href="/shop" variant="outline" fullWidth>
             View all phones
@@ -126,7 +118,6 @@ export function TrendingPhones() {
           </ButtonLink>
         </div>
       </div>
-
       <QuickViewModal product={quickView} onClose={() => setQuickView(null)} />
     </section>
   );

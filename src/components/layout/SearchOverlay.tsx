@@ -1,7 +1,7 @@
 'use client';
 
+import { m, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
 import { CornerDownLeft, Search, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useUI } from '@/store/cartStore';
@@ -9,7 +9,6 @@ import { products } from '@/data/products';
 import { ProductVisual } from '@/components/product/ProductVisual';
 import { formatPrice } from '@/lib/utils';
 import { cn } from '@/lib/utils';
-
 /**
  * Command-palette style search.
  *
@@ -18,16 +17,13 @@ import { cn } from '@/lib/utils';
  * first keystroke with no network round trip. Full keyboard support: arrows to
  * move, Enter to open, Escape to close.
  */
-
 const MAX_RESULTS = 6;
-
 export function SearchOverlay() {
   const router = useRouter();
   const { isSearchOpen, setSearchOpen } = useUI();
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-
   // Reset whenever the overlay opens.
   useEffect(() => {
     if (isSearchOpen) {
@@ -38,7 +34,6 @@ export function SearchOverlay() {
     }
     return undefined;
   }, [isSearchOpen]);
-
   // `/` opens search, but never while the visitor is typing in a field.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -47,7 +42,6 @@ export function SearchOverlay() {
         target?.tagName === 'INPUT' ||
         target?.tagName === 'TEXTAREA' ||
         target?.isContentEditable;
-
       if (e.key === '/' && !typing && !isSearchOpen) {
         e.preventDefault();
         setSearchOpen(true);
@@ -57,7 +51,6 @@ export function SearchOverlay() {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [isSearchOpen, setSearchOpen]);
-
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) {
@@ -72,12 +65,10 @@ export function SearchOverlay() {
       )
       .slice(0, MAX_RESULTS);
   }, [query]);
-
   const go = (href: string) => {
     setSearchOpen(false);
     router.push(href);
   };
-
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -91,12 +82,11 @@ export function SearchOverlay() {
       else if (query.trim()) go(`/shop?q=${encodeURIComponent(query.trim())}`);
     }
   };
-
   return (
     <AnimatePresence>
       {isSearchOpen && (
         <div className="fixed inset-0 z-[112] flex items-start justify-center px-4 pt-[12vh] sm:pt-[16vh]">
-          <motion.button
+          <m.button
             type="button"
             aria-label="Close search"
             initial={{ opacity: 0 }}
@@ -106,8 +96,7 @@ export function SearchOverlay() {
             onClick={() => setSearchOpen(false)}
             className="absolute inset-0 h-full w-full cursor-default bg-ink-900/55 backdrop-blur-sm"
           />
-
-          <motion.div
+          <m.div
             role="dialog"
             aria-modal="true"
             aria-label="Search products"
@@ -142,7 +131,6 @@ export function SearchOverlay() {
                 <X className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
-
             <div className="max-h-[52vh] overflow-y-auto p-2">
               {results.length === 0 ? (
                 <div className="px-4 py-10 text-center">
@@ -206,7 +194,6 @@ export function SearchOverlay() {
                       </li>
                     ))}
                   </ul>
-
                   {query && (
                     <button
                       type="button"
@@ -220,7 +207,7 @@ export function SearchOverlay() {
                 </>
               )}
             </div>
-          </motion.div>
+          </m.div>
         </div>
       )}
     </AnimatePresence>

@@ -1,8 +1,8 @@
 'use client';
 
+import { m } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import {
   CheckCircle2,
   Check,
@@ -25,7 +25,6 @@ import {
 } from '@/lib/config';
 import { formatDate, formatPrice } from '@/lib/utils';
 import type { Order } from '@/types';
-
 /**
  * Order confirmation.
  *
@@ -38,18 +37,14 @@ export function OrderSuccess() {
   const params = useSearchParams();
   const orderNumber = params.get('order') ?? '';
   const { toast } = useToast();
-
   const [order, setOrder] = useState<Order | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'missing'>('loading');
-
   useEffect(() => {
     if (!orderNumber) {
       setStatus('missing');
       return;
     }
-
     let cancelled = false;
-
     // Prefer the in-memory order written by checkout, then confirm with the API.
     const fromSession = (() => {
       try {
@@ -59,12 +54,10 @@ export function OrderSuccess() {
         return null;
       }
     })();
-
     if (fromSession) {
       setOrder(fromSession);
       setStatus('ready');
     }
-
     ordersApi
       .get(orderNumber)
       .then(({ order: fetched }) => {
@@ -78,12 +71,10 @@ export function OrderSuccess() {
         // when we genuinely have nothing to show.
         if (!fromSession) setStatus('missing');
       });
-
     return () => {
       cancelled = true;
     };
   }, [orderNumber]);
-
   const copyOrder = async () => {
     try {
       await navigator.clipboard.writeText(orderNumber);
@@ -92,7 +83,6 @@ export function OrderSuccess() {
       toast({ title: 'Could not copy', description: orderNumber, tone: 'info' });
     }
   };
-
   if (status === 'loading') {
     return (
       <div className="container py-20">
@@ -100,7 +90,6 @@ export function OrderSuccess() {
       </div>
     );
   }
-
   if (status === 'missing' || !order) {
     return (
       <div className="container py-20">
@@ -132,32 +121,29 @@ export function OrderSuccess() {
       </div>
     );
   }
-
   const eta =
     order.deliveryMethod === 'pickup'
       ? 'Ready for collection in about 2 hours'
       : order.deliveryMethod === 'express'
         ? 'Arriving tomorrow'
         : 'Arriving in 2–4 business days';
-
   return (
     <div className="container py-10 sm:py-14">
       <div className="mx-auto max-w-2xl text-center">
-        <motion.div
+        <m.div
           initial={{ scale: 0, rotate: -30 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 16, delay: 0.08 }}
           className="relative mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-lift"
         >
           <CheckCircle2 className="h-10 w-10 text-white" aria-hidden="true" />
-          <motion.span
+          <m.span
             className="absolute inset-0 rounded-3xl ring-2 ring-emerald-400/40"
             animate={{ scale: 1.25, opacity: 0 }}
             transition={{ duration: 1.8, repeat: Infinity, ease: 'easeOut' }}
           />
-        </motion.div>
-
-        <motion.div
+        </m.div>
+        <m.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.16, duration: 0.45 }}
@@ -170,7 +156,6 @@ export function OrderSuccess() {
             <span className="font-semibold text-ink-900">{order.customer.email}</span> and
             will WhatsApp you tracking updates on {order.customer.phone}.
           </p>
-
           <button
             type="button"
             onClick={copyOrder}
@@ -184,15 +169,13 @@ export function OrderSuccess() {
             </span>
             <Copy className="h-3.5 w-3.5 text-ink-400" aria-hidden="true" />
           </button>
-
           {order.paymentProvider === 'mock' && (
             <p className="mt-4 inline-block rounded-xl border border-amber-400/30 bg-amber-50 px-4 py-2.5 text-xs font-medium text-amber-800">
               This was a <strong>test-mode</strong> order — no real payment was processed.
             </p>
           )}
-        </motion.div>
+        </m.div>
       </div>
-
       <div className="mx-auto mt-12 grid max-w-4xl gap-6 lg:grid-cols-3">
         <div className="rounded-3xl border border-surface-200 bg-white p-6 shadow-soft lg:col-span-2">
           <h2 className="text-lg font-bold tracking-tight text-ink-900">
@@ -234,7 +217,6 @@ export function OrderSuccess() {
               </li>
             ))}
           </ul>
-
           <dl className="mt-5 space-y-2 border-t border-surface-200 pt-5 text-sm">
             <div className="flex justify-between">
               <dt className="text-ink-600">Subtotal</dt>
@@ -272,7 +254,6 @@ export function OrderSuccess() {
             </div>
           </dl>
         </div>
-
         {/* ── Delivery + support ─────────────────────────────────────── */}
         <div className="space-y-6">
           <div className="rounded-3xl border border-surface-200 bg-white p-6 shadow-soft">
@@ -293,7 +274,6 @@ export function OrderSuccess() {
               Placed on {formatDate(order.createdAt)}
             </p>
           </div>
-
           <div className="rounded-3xl border border-surface-200 bg-white p-6 shadow-soft">
             <h2 className="text-sm font-bold text-ink-900">Need anything?</h2>
             <p className="mt-1.5 text-xs leading-relaxed text-ink-500">
@@ -324,7 +304,6 @@ export function OrderSuccess() {
               </a>
             </div>
           </div>
-
           <ButtonLink href="/shop" variant="outline" fullWidth>
             Continue shopping
           </ButtonLink>
@@ -333,5 +312,3 @@ export function OrderSuccess() {
     </div>
   );
 }
-
-

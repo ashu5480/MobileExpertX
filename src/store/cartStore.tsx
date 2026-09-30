@@ -19,7 +19,6 @@ import {
   totalsFromCart,
   type CartEntry,
 } from '@/lib/pricing';
-import { getAllProducts } from '@/services/catalogService';
 import type {
   AccessoryProduct,
   CartLine,
@@ -144,11 +143,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const hydrated = useRef(false);
 
   // Load the catalogue so variant prices are authoritative, then rehydrate.
+  //
+  // Fetched over HTTP rather than importing the catalogue service: this file is
+  // a client component, and the service reaches SQLite on the server. The
+  // server still recomputes every price at checkout, so this copy is for
+  // display only.
   useEffect(() => {
     let cancelled = false;
-    getAllProducts()
-      .then((list) => {
-        if (!cancelled && list.length) setProducts(list);
+    fetch('/api/products?pageSize=200')
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('catalogue'))))
+      .then((data) => {
+        const items = data?.items;
+        if (!cancelled && Array.isArray(items) && items.length) setProducts(items);
       })
       .catch(() => {
         /* keep the bundled seed catalogue */

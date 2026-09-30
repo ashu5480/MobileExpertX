@@ -85,3 +85,11 @@ export default function AccessoriesPage() {
     </>
   );
 }
+
+/**
+ * Catalogue-backed route: the admin panel can change prices, stock, photos
+ * and discounts at any time, so this is incremental-static. Admin saves call
+ * `revalidatePath` so changes appear immediately; this interval is the net for
+ * anything that slips through.
+ */
+export const revalidate = 60;

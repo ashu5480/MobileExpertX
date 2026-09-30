@@ -117,7 +117,7 @@ export default function ContactPage() {
                 href={`mailto:${siteConfig.contact.email}`}
                 className="flex items-start gap-4 rounded-3xl border border-surface-200 bg-white p-5 shadow-soft transition-colors hover:border-brand-300"
               >
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-cyan-500/10 text-cyan-600">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand-500/10 text-brand-600">
                   <Mail className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <span className="min-w-0">

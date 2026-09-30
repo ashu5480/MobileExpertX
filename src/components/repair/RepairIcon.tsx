@@ -1,10 +1,9 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { RepairService } from '@/types';
-
 /**
  * Repair service icon set.
  *
@@ -91,7 +90,6 @@ const PATHS: Record<string, JSX.Element> = {
     </>
   ),
 };
-
 export function RepairIcon({
   name,
   className,
@@ -107,7 +105,6 @@ export function RepairIcon({
       <path d="M9 9h6M9 13h6" />
     </>
   );
-
   return (
     <span className={cn('shrink-0', className)} aria-hidden="true">
       <svg
@@ -124,12 +121,11 @@ export function RepairIcon({
     </span>
   );
 }
-
 /** Animated "phone being repaired" visual used on the repair page hero. */
 export function RepairPhoneVisual({ className }: { className?: string }) {
   return (
     <div className={cn('relative', className)} aria-hidden="true">
-      <motion.div
+      <m.div
         animate={{ y: [0, -8, 0] }}
         transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
         className="relative mx-auto aspect-[9/17] w-32"
@@ -149,21 +145,20 @@ export function RepairPhoneVisual({ className }: { className?: string }) {
           <path d="M58 78 L84 66" stroke="rgba(255,255,255,0.4)" strokeWidth="1" fill="none" />
           <path d="M40 120 L14 134" stroke="rgba(255,255,255,0.4)" strokeWidth="1" fill="none" />
         </svg>
-        <motion.div
+        <m.div
           className="absolute inset-0 rounded-[1.4rem]"
           animate={{ opacity: [0, 0.55, 0] }}
           transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ boxShadow: '0 0 40px 8px rgba(37,99,255,0.5)' }}
+          style={{ boxShadow: '0 0 40px 8px rgba(16,185,129,0.45)' }}
         />
-      </motion.div>
-
-      <motion.div
+      </m.div>
+      <m.div
         className="absolute -right-6 top-8 grid h-11 w-11 place-items-center rounded-2xl bg-white shadow-lift"
         animate={{ y: [0, 10, 0], rotate: [0, 8, 0] }}
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
       >
         <ShieldCheck className="h-5 w-5 text-emerald-500" />
-      </motion.div>
+      </m.div>
     </div>
   );
 }

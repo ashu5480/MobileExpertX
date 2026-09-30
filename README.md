@@ -226,9 +226,144 @@ rebuild. The address blocks come back automatically; no code change is needed.
 
 ---
 
+## Accounts and the admin panel
+
+### Signing in
+
+Go to **`/login`**. One page handles both signing in and creating a customer
+account — just click *"Create an account"* underneath the form.
+
+| Area | URL | Who |
+| --- | --- | --- |
+| Sign in / register | `/login` | anyone |
+| My items | `/account/items` | signed-in customer |
+| Admin panel | `/admin` | admin only |
+
+### The admin account
+
+The first admin is created **the first time the database is created**, from
+these two environment variables:
+
+```env
+ADMIN_EMAIL=you@example.com
+ADMIN_PASSWORD=<a long, random password>
+```
+
+The account is seeded automatically on the first visit to `/login`, on the
+first admin-panel request, and on the first sign-in attempt — so a fresh
+install works immediately, with no manual setup step.
+
+> **Change `ADMIN_PASSWORD` before you deploy.** The value in `.env` is a
+> placeholder. Generate a real one with:
+> ```bash
+> node -e "console.log(require('crypto').randomBytes(12).toString('base64url'))"
+> ```
+>
+> These are read **once**. After the account exists it lives in the database,
+> and changing the env var has no effect — use the admin panel instead.
+> If the variables are missing, the site still boots but **nobody can sign in
+> as admin**. It fails closed rather than shipping a default password.
+>
+> To start over, stop the server and delete the `.data` folder. The next boot
+> recreates the database and the admin account from the env vars.
+
+Set `ADMIN_NAME` too, and it becomes the display name on the account.
+
+### What each side can do
+
+**Customer** — sign up, then at `/account/items`:
+
+- add an item with a title, price, category, condition, description and up to
+  6 photos;
+- edit or delete any of their own items at any time;
+- see their items paged 10 at a time.
+
+**Admin** — at `/admin`:
+
+| Screen | What it does |
+| --- | --- |
+| Dashboard | Counts and order value, plus the newest trade-ins and repairs |
+| **Catalogue** | **Add/edit any phone or accessory — photo, price, MRP, discount, stock, description** |
+| Customer items | Every customer listing, with a sold/hidden switch |
+| Trade-ins | Move each device through quote → accepted → completed |
+| Repairs | Confirm, start, and complete repair bookings |
+| Orders | Move orders through paid → shipped → delivered |
+| Enquiries | Messages from the contact form |
+| Users | Promote a customer to admin |
+
+### Managing your catalogue
+
+`/admin/catalogue` is the screen you will use daily.
+
+**Adding an accessory (or a phone)**
+
+1. Click **Add item**.
+2. Pick *An accessory* or *A phone*.
+3. Fill in the name, brand and category.
+4. Set the **MRP** (the struck-through "was" price) and optionally a
+   **discount %**. The selling price is calculated for you, and the form shows
+   exactly what the customer will see.
+5. Add up to 6 photos — the first one becomes the listing image.
+6. **Add to catalogue.** It is live immediately.
+
+**Changing a price, discount or stock**
+
+Every row has inline boxes for **Selling price**, **MRP**, **Discount %** and
+**Stock**. Type a value, press **Save**, and the storefront updates. The
+**Live / Hidden** button takes an item off the shop without deleting it.
+
+**Discounts** are applied to the MRP rather than typed in directly, so the
+"was" price stays truthful and the `42% OFF` badge always matches.
+
+Changes to a **seeded** item (one of the original 32) work exactly the same as
+a new one — the admin panel edits the database, and the bundled data is only
+the starting point.
+
+**How it works underneath**
+
+The catalogue in `src/data/*.ts` is the baseline; it is copied into the
+database on first run. Admin edits are layered on top, so the rich seed fields
+(specs, colours, highlights) survive while price, stock, discount, photo and
+description become editable. Any blank field falls back to its bundled value.
+
+Storefront pages revalidate on save, so a change appears on the next visit
+rather than at the next build.
+
+### How it is secured
+
+- **Passwords** are hashed with scrypt (Node built-in, memory-hard) and a
+  per-user salt. Plaintext is never stored or logged.
+- **Sessions** are random 256-bit tokens stored server-side in SQLite and sent
+  as an `httpOnly` cookie. There is no JWT, so signing out genuinely revokes
+  access immediately rather than waiting for a token to expire.
+- **Self-registration can only ever create a customer.** Promotion to admin is
+  a separate, authenticated action, so nobody can `POST role: "admin"`.
+- **Login and registration are rate limited** per IP.
+- **Listing access is scoped by owner** in SQL. Requesting someone else's id
+  returns 404, not 403, so the response cannot confirm it exists.
+- **Middleware is only a fast path.** It runs on the Edge runtime and cannot
+  open the database, so it just bounces anonymous users. The real checks are
+  `requireUser()` / `requireAdmin()` in every page and route, which query the
+  session table and verify the role on Node.
+
+### Data storage
+
+Orders, bookings, trade-ins, enquiries, users and listings are written to
+**SQLite** using Node's built-in `node:sqlite` — no ORM, no driver, and
+**no new npm dependency**. The file lives in `./.data/` and is git-ignored.
+
+Uploaded images are written to `public/uploads/` and are also git-ignored.
+
+> On a single server this is all you need. If you deploy to a serverless host
+> (Vercel, Lambda) the local filesystem is ephemeral — move to Postgres and an
+> object store at that point. `src/lib/db.ts` and `src/lib/upload.ts` are the
+> only two files that would change.
+
+---
+
 ## Testing
 
-`npm test` runs four integration suites against a production build:
+`npm test` runs six integration suites against a production build:
 
 | Suite | Covers |
 | --- | --- |
@@ -236,8 +371,18 @@ rebuild. The address blocks come back automatically; no code change is needed.
 | `orders.test.cjs` | Server-side re-pricing, tamper resistance, stock limits, payment verification |
 | `catalogue.test.cjs` | Filtering, search, sorting, pagination |
 | `seo.test.cjs` | Titles, descriptions, canonicals, JSON-LD, headers, contact links, secret leakage |
+| `auth.e2e.cjs` | Registration, login, rate limits, session revocation, listing ownership, admin access |
+| `catalogue-admin.e2e.cjs` | Admin add/edit/delete, discounts, photo validation, storefront pickup of changes |
 
-Current status: **all suites passing, 189 assertions, 0 failures.**
+Current status: **all suites passing, 257 assertions, 0 failures.**
+
+`auth.e2e.cjs` and `catalogue-admin.e2e.cjs` need `ADMIN_EMAIL` and
+`ADMIN_PASSWORD` in the environment to exercise the admin sign-in; without
+them they still run everything else and print a skip notice.
+
+> Run the suite against a freshly started server. Sign-in is rate limited per
+> IP (10 attempts per 15 minutes), so two back-to-back runs will fail the login
+> checks with a 429 — that is the limiter working, not a regression.
 
 ---
 

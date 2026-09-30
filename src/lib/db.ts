@@ -18,11 +18,44 @@ function open(): DatabaseSync {
   const d = new DatabaseSync(join(DATA_DIR, 'mobilexpertx.db'));
   d.exec('PRAGMA journal_mode = WAL');
   d.exec('PRAGMA foreign_keys = ON');
+  // Wait instead of failing when another process holds the write lock, rather
+  // than the default immediate "database is locked" error.
+  d.exec('PRAGMA busy_timeout = 5000');
   migrate(d);
   return d;
 }
 
-export const db: DatabaseSync = g.__mexDb ?? (g.__mexDb = open());
+/**
+ * Lazily-opened connection.
+ *
+ * Opening on first use rather than at import time matters during
+ * `next build`: page-data collection imports every route module across
+ * parallel worker processes, and eagerly opening the file from each of them
+ * caused lock contention. Nothing touches the disk until a query runs.
+ *
+ * The Proxy keeps every existing `db.prepare(...)` call site unchanged.
+ */
+export const db: DatabaseSync = new Proxy({} as DatabaseSync, {
+  get(_target, prop, receiver) {
+    const instance = (g.__mexDb ??= open());
+    const value = Reflect.get(instance as object, prop, receiver);
+    return typeof value === 'function' ? value.bind(instance) : value;
+  },
+});
+
+/** Adds a column only when it is missing, so re-running migrate() is safe. */
+function addColumn(d: DatabaseSync, table: string, column: string, definition: string) {
+  const existing = d.prepare(`PRAGMA table_info(${table})`).all() as Array<{ name: string }>;
+  if (existing.some((c) => c.name === column)) return;
+  try {
+    d.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  } catch (error) {
+    // `next build` runs page-data collection in parallel workers, so two of
+    // them can add the same column at once. The loser only needs to shrug.
+    const message = error instanceof Error ? error.message : String(error);
+    if (!/duplicate column name/i.test(message)) throw error;
+  }
+}
 
 function migrate(d: DatabaseSync) {
   d.exec(`
@@ -118,6 +151,22 @@ function migrate(d: DatabaseSync) {
       updatedAt TEXT NOT NULL
     );
   `);
+
+  // Columns added after the first release. SQLite has no "ADD COLUMN IF NOT
+  // EXISTS", so each is checked against the live table first -- this runs on
+  // every open and is a no-op once the column exists.
+  addColumn(d, 'products', 'kind', "TEXT NOT NULL DEFAULT 'phone'");
+  addColumn(d, 'products', 'category', "TEXT NOT NULL DEFAULT ''");
+  // Percent off the MRP, kept explicit so a 0 discount is distinguishable
+  // from "never set" and the storefront badge does not re-derive it.
+  addColumn(d, 'products', 'discountPercent', 'INTEGER NOT NULL DEFAULT 0');
+  addColumn(d, 'products', 'featured', 'INTEGER NOT NULL DEFAULT 0');
+  addColumn(d, 'products', 'sku', "TEXT NOT NULL DEFAULT ''");
+  addColumn(d, 'products', 'highlights', "TEXT NOT NULL DEFAULT '[]'");
+  addColumn(d, 'products', 'compatibility', "TEXT NOT NULL DEFAULT '[]'");
+  // Full object for admin-created items, which have no bundled counterpart
+  // to merge into.
+  addColumn(d, 'products', 'payload', "TEXT NOT NULL DEFAULT ''");
 }
 
 /* Row helpers. node:sqlite returns null-prototype objects; normalise them. */

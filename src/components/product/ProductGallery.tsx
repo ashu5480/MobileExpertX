@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Heart, RotateCw, Share2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { ProductVisual } from './ProductVisual';
@@ -8,7 +8,6 @@ import { useToast } from '@/store/toastStore';
 import { useWishlist } from '@/store/wishlistStore';
 import { cn } from '@/lib/utils';
 import type { ColorOption, Product, ProductImage } from '@/types';
-
 /**
  * Product gallery.
  *
@@ -27,16 +26,13 @@ export function ProductGallery({
   const { toggle, has, isHydrated } = useWishlist();
   const { toast } = useToast();
   const saved = isHydrated && has(product.id);
-
   // A colour change should reset the view to the front shot.
   useEffect(() => {
     setIndex(0);
   }, [activeColor?.name]);
-
   const images: ProductImage[] = product.images.length
     ? product.images
     : [{ url: '', alt: product.name, view: 'front' }];
-
   const onShare = useCallback(async () => {
     const url = typeof window !== 'undefined' ? window.location.href : '';
     try {
@@ -50,14 +46,13 @@ export function ProductGallery({
       // User dismissed the share sheet — no action needed.
     }
   }, [product.name, toast]);
-
   return (
     <div className="lg:sticky lg:top-28">
       {/* Stage */}
       <div className="relative overflow-hidden rounded-3xl border border-surface-200 bg-white">
         <div className="aspect-square">
           <AnimatePresence mode="wait">
-            <motion.div
+            <m.div
               key={`${index}-${activeColor?.name ?? 'default'}`}
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -77,15 +72,13 @@ export function ProductGallery({
                 priority
                 className="h-full w-full"
               />
-            </motion.div>
+            </m.div>
           </AnimatePresence>
         </div>
-
         {/* View label */}
         <span className="pointer-events-none absolute left-4 top-4 rounded-full bg-white/85 px-3 py-1 text-[11px] font-semibold text-ink-700 backdrop-blur-md">
           {images[index]?.view === 'back' ? 'Back' : images[index]?.view === 'detail' ? 'Detail' : 'Front'}
         </span>
-
         {/* Stage actions */}
         <div className="absolute right-4 top-4 flex flex-col gap-2">
           <button
@@ -110,7 +103,6 @@ export function ProductGallery({
           </button>
         </div>
       </div>
-
       {/* Thumbnails */}
       {images.length > 1 && (
         <div className="mt-4 flex gap-3" role="tablist" aria-label="Product images">
@@ -144,7 +136,6 @@ export function ProductGallery({
           ))}
         </div>
       )}
-
       <p className="mt-4 flex items-center gap-2 text-xs text-ink-500">
         <RotateCw className="h-3.5 w-3.5" aria-hidden="true" />
         Select a colour to preview it on the device.

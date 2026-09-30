@@ -1,7 +1,7 @@
 import { apiUser } from '@/lib/guards';
 import { deleteListing, getOwned, updateListing } from '@/lib/listings';
 import { isStoredUpload } from '@/lib/upload';
-import { toPaise, validateListing } from '@/lib/listing-input';
+import { toPaise, validateListing } from '@/lib/listing-shared';
 import { jsonError, readJson } from '@/lib/api-helpers';
 
 export const runtime = 'nodejs';

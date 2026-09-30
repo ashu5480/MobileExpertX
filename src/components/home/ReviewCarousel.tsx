@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import {
   ArrowLeftRight,
   ChevronLeft,
@@ -17,21 +17,18 @@ import { Avatar } from '@/components/ui/Avatar';
 import { testimonials } from '@/data/testimonials';
 import { cn } from '@/lib/utils';
 import { fadeUp, viewportOnce } from '@/lib/motion';
-
 const SERVICE_ICONS = {
   purchase: ShoppingBag,
   sell: ArrowLeftRight,
   repair: Wrench,
   accessories: Gift,
 } as const;
-
 const SERVICE_LABELS = {
   purchase: 'Purchase',
   sell: 'Trade-in',
   repair: 'Repair',
   accessories: 'Accessories',
 } as const;
-
 /**
  * Testimonial carousel.
  *
@@ -43,14 +40,12 @@ export function ReviewCarousel() {
   const railRef = useRef<HTMLUListElement>(null);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
-
   const updateEdges = useCallback(() => {
     const el = railRef.current;
     if (!el) return;
     setAtStart(el.scrollLeft <= 8);
     setAtEnd(el.scrollLeft >= el.scrollWidth - el.clientWidth - 8);
   }, []);
-
   useEffect(() => {
     updateEdges();
     const el = railRef.current;
@@ -62,7 +57,6 @@ export function ReviewCarousel() {
       window.removeEventListener('resize', updateEdges);
     };
   }, [updateEdges]);
-
   const scrollByCard = (direction: 1 | -1) => {
     const el = railRef.current;
     if (!el) return;
@@ -70,7 +64,6 @@ export function ReviewCarousel() {
     const step = card ? card.getBoundingClientRect().width + 20 : el.clientWidth * 0.8;
     el.scrollBy({ left: step * direction, behavior: 'smooth' });
   };
-
   return (
     <section className="section bg-surface-50" aria-labelledby="reviews-heading">
       <div className="container">
@@ -82,7 +75,6 @@ export function ReviewCarousel() {
             description="4.8 out of 5 from more than 1,800 verified purchases and service bookings."
             className="flex-1"
           />
-
           <div className="flex shrink-0 gap-2">
             <button
               type="button"
@@ -104,8 +96,7 @@ export function ReviewCarousel() {
             </button>
           </div>
         </div>
-
-        <motion.ul
+        <m.ul
           ref={railRef}
           variants={fadeUp}
           initial="hidden"
@@ -126,11 +117,9 @@ export function ReviewCarousel() {
                     <Rating value={t.rating} size={15} />
                     <Quote className="h-7 w-7 shrink-0 text-surface-300" aria-hidden="true" />
                   </div>
-
                   <blockquote className="mt-4 flex-1">
                     <p className="text-[15px] leading-relaxed text-ink-700">“{t.review}”</p>
                   </blockquote>
-
                   <figcaption className="mt-6 flex items-center gap-3 border-t border-surface-200 pt-5">
                     <Avatar name={t.name} size={44} />
                     <div className="min-w-0 flex-1">
@@ -142,13 +131,12 @@ export function ReviewCarousel() {
                       {SERVICE_LABELS[t.service]}
                     </span>
                   </figcaption>
-
                   <p className="mt-3 truncate text-[11px] text-ink-400">{t.purchased}</p>
                 </figure>
               </li>
             );
           })}
-        </motion.ul>
+        </m.ul>
       </div>
     </section>
   );

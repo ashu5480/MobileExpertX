@@ -1,7 +1,7 @@
 'use client';
 
+import { m, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
-import { motion, useScroll, useTransform } from 'framer-motion';
 import {
   ArrowRight,
   Bolt,
@@ -18,7 +18,6 @@ import { ProductVisual } from '@/components/product/ProductVisual';
 import { products } from '@/data/products';
 import { fadeUp, stagger, staggerItem, viewportOnce } from '@/lib/motion';
 import { cn } from '@/lib/utils';
-
 const ICONS = {
   sparkles: Sparkles,
   bolt: Bolt,
@@ -26,7 +25,6 @@ const ICONS = {
   repeat: Repeat,
   refresh: RefreshCw,
 } as const;
-
 /**
  * "Shop by category" — the primary discovery surface on the home page.
  *
@@ -41,7 +39,6 @@ export function CategoryGrid() {
     offset: ['start end', 'end start'],
   });
   const y = useTransform(scrollYProgress, [0, 1], ['-8%', '8%']);
-
   return (
     <section className="section bg-surface-50" aria-labelledby="categories-heading">
       <div className="container">
@@ -60,8 +57,7 @@ export function CategoryGrid() {
             </Link>
           }
         />
-
-        <motion.div
+        <m.div
           ref={ref}
           variants={stagger(0.07)}
           initial="hidden"
@@ -73,9 +69,8 @@ export function CategoryGrid() {
             const Icon = ICONS[category.icon];
             const sample = products.find((p) => p.category === category.id) ?? products[i];
             const isWide = category.id === 'refurbished';
-
             return (
-              <motion.div key={category.id} variants={staggerItem} className={cn(isWide && 'sm:col-span-2')}>
+              <m.div key={category.id} variants={staggerItem} className={cn(isWide && 'sm:col-span-2')}>
                 <Link
                   href={category.href}
                   className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-surface-200 bg-white p-6 shadow-soft transition-all duration-500 ease-premium hover:-translate-y-1.5 hover:border-transparent hover:shadow-lift"
@@ -86,7 +81,6 @@ export function CategoryGrid() {
                     style={{ background: category.accent }}
                     aria-hidden="true"
                   />
-
                   <div className="relative flex items-start justify-between gap-4">
                     <span
                       className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl transition-transform duration-500 group-hover:scale-110"
@@ -94,7 +88,6 @@ export function CategoryGrid() {
                     >
                       <Icon className="h-6 w-6" aria-hidden="true" />
                     </span>
-
                     <div
                       className="pointer-events-none absolute -bottom-2 right-0 h-28 w-20 opacity-25 transition-all duration-500 group-hover:scale-110 group-hover:opacity-45"
                       aria-hidden="true"
@@ -109,7 +102,6 @@ export function CategoryGrid() {
                       />
                     </div>
                   </div>
-
                   <div className="relative mt-5 flex-1">
                     <p
                       className="text-[11px] font-bold uppercase tracking-[0.14em]"
@@ -124,7 +116,6 @@ export function CategoryGrid() {
                       {category.description}
                     </p>
                   </div>
-
                   <span className="relative mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-900">
                     Browse
                     <ArrowRight
@@ -133,10 +124,10 @@ export function CategoryGrid() {
                     />
                   </span>
                 </Link>
-              </motion.div>
+              </m.div>
             );
           })}
-        </motion.div>
+        </m.div>
       </div>
     </section>
   );

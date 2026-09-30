@@ -2,22 +2,15 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { readPayload, setQueueStatus, type QueueName } from '@/lib/adminService';
+import { readPayload, QUEUE_STATUSES, type QueueName, type QueueRow } from '@/lib/admin-shared';
 import { formatPrice } from '@/lib/utils';
 
 /**
  * Admin queue table with inline status changes.
  *
- * The status dropdown is driven by a per-queue allow-list, so the API can
- * never be talked into writing an arbitrary string into `status`.
+ * The dropdown is driven by the shared QUEUE_STATUSES allow-list, which the
+ * API validates against too -- so the UI and the server can never disagree.
  */
-
-export const QUEUE_STATUSES: Record<QueueName, string[]> = {
-  orders: ['pending', 'confirmed', 'paid', 'shipped', 'delivered', 'cancelled'],
-  bookings: ['pending', 'confirmed', 'in_progress', 'ready', 'completed', 'cancelled'],
-  sellRequests: ['pending', 'quoted', 'accepted', 'completed', 'declined'],
-  inquiries: ['new', 'replied', 'closed'],
-};
 
 const STATUS_STYLES: Record<string, string> = {
   pending: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -34,10 +27,10 @@ const STATUS_STYLES: Record<string, string> = {
 
 export function QueueTable({
   queue,
-  rows,
+  rows: items,
 }: {
   queue: QueueName;
-  rows: Array<{ id: string; reference: string; status: string; createdAt: string; payload: string; totalPaise?: number; quotedPaise?: number }>;
+  rows: QueueRow[];
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
@@ -56,7 +49,7 @@ export function QueueTable({
     }
   }
 
-  if (rows.length === 0) {
+  if (items.length === 0) {
     return (
       <p className="rounded-2xl border border-dashed border-surface-300 bg-white p-8 text-center text-sm text-ink-500">
         Nothing here yet.
@@ -76,8 +69,8 @@ export function QueueTable({
           </tr>
         </thead>
         <tbody className="divide-y divide-surface-100">
-          {rows.map((row) => {
-            const p = readPayload<Record<string, string | number>>(row.payload);
+          {items.map((row) => {
+            const p = readPayload(row.payload);
             const amount = row.totalPaise ?? row.quotedPaise ?? 0;
             const who = String(p.name || p.fullName || p.customerName || '—');
             const what = String(

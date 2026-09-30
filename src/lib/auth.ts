@@ -93,7 +93,9 @@ export function setSessionCookie(token: string): void {
   cookies().set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    // Secure in production, so the cookie is never sent over plain HTTP.
+    // Opt out explicitly for local testing against http://localhost.
+    secure: process.env.NODE_ENV === 'production' && process.env.MEX_INSECURE_COOKIE !== '1',
     path: '/',
     maxAge: SESSION_TTL_MS / 1000,
   });
@@ -186,11 +188,22 @@ export function ensureAdminUser(): { created: boolean; email?: string } {
     throw new Error('ADMIN_PASSWORD must be at least 10 characters.');
   }
 
-  const created = createUser({
-    email,
-    password,
-    name: process.env.ADMIN_NAME?.trim() || 'Administrator',
-    role: 'admin',
-  });
-  return { created: Boolean(created), email };
+  try {
+    const created = createUser({
+      email,
+      password,
+      name: process.env.ADMIN_NAME?.trim() || 'Administrator',
+      role: 'admin',
+    });
+    return { created: Boolean(created), email };
+  } catch (error) {
+    // `next build` collects page data in parallel worker processes, so two of
+    // them can race to seed the same admin. The loser sees a UNIQUE
+    // constraint on the email -- which just means the account now exists.
+    const message = error instanceof Error ? error.message : String(error);
+    if (/UNIQUE constraint failed/i.test(message)) {
+      return { created: false, email };
+    }
+    throw error;
+  }
 }

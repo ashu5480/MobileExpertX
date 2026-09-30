@@ -1,7 +1,7 @@
 'use client';
 
+import { m, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { AnimatePresence, motion } from 'framer-motion';
 import {
   ArrowRight,
   Heart,
@@ -20,7 +20,6 @@ import { ProductVisual, AccessoryVisual } from '@/components/product/ProductVisu
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { checkCoupon, freeShippingProgress, amountToFreeShipping, type CartEntry } from '@/lib/pricing';
 import { formatPrice, cn } from '@/lib/utils';
-
 /**
  * Full cart page.
  *
@@ -42,10 +41,8 @@ export function CartClient() {
   const { openCart } = useUI();
   const { ids: wishlistIds, add: addToWishlist } = useWishlist();
   const { toast } = useToast();
-
   const [couponInput, setCouponInput] = useState(couponCode ?? '');
   const [couponError, setCouponError] = useState<string | null>(null);
-
   const applyCoupon = () => {
     const code = couponInput.trim();
     if (!code) {
@@ -66,10 +63,8 @@ export function CartClient() {
       tone: 'success',
     });
   };
-
   const progress = freeShippingProgress(totals.subtotalPaise);
   const remaining = amountToFreeShipping(totals.subtotalPaise);
-
   if (!isHydrated) {
     return (
       <div className="container py-16">
@@ -77,7 +72,6 @@ export function CartClient() {
       </div>
     );
   }
-
   if (entries.length === 0) {
     return (
       <div className="container py-16">
@@ -108,7 +102,6 @@ export function CartClient() {
       </div>
     );
   }
-
   return (
     <div className="container pb-24 pt-6 lg:pb-16">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-surface-200 pb-5">
@@ -129,7 +122,6 @@ export function CartClient() {
           Clear cart
         </button>
       </div>
-
       {/* Free-shipping progress — the strongest add-a-second-item incentive */}
       <div className="mt-5 rounded-2xl border border-brand-500/20 bg-brand-500/5 p-4">
         <div className="flex items-center justify-between gap-3 text-sm">
@@ -146,7 +138,7 @@ export function CartClient() {
           <p className="shrink-0 text-xs text-ink-500">{Math.round(progress * 100)}%</p>
         </div>
         <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-white">
-          <motion.div
+          <m.div
             className="h-full rounded-full bg-brand-gradient"
             initial={false}
             animate={{ width: `${progress * 100}%` }}
@@ -154,7 +146,6 @@ export function CartClient() {
           />
         </div>
       </div>
-
       <div className="mt-8 grid gap-8 lg:grid-cols-3 lg:gap-10">
         <div className="lg:col-span-2">
           <ul className="divide-y divide-surface-200 rounded-3xl border border-surface-200 bg-white px-5 shadow-soft">
@@ -164,21 +155,18 @@ export function CartClient() {
               ))}
             </AnimatePresence>
           </ul>
-
           <div className="mt-6 flex flex-wrap gap-3">
             <ButtonLink href="/shop" variant="outline">
               Continue shopping
             </ButtonLink>
           </div>
         </div>
-
         {/* ── Summary ────────────────────────────────────────────────── */}
         <aside className="lg:sticky lg:top-28 lg:self-start">
           <div className="rounded-3xl border border-surface-200 bg-white p-6 shadow-card">
             <h2 className="text-lg font-bold tracking-tight text-ink-900">
               Order summary
             </h2>
-
             {/* Coupon */}
             <div className="mt-5">
               <label
@@ -238,7 +226,6 @@ export function CartClient() {
                 )
               )}
             </div>
-
             {/* Totals */}
             <dl className="mt-6 space-y-2.5 border-t border-surface-200 pt-5 text-sm">
               <Row label="Subtotal" value={formatPrice(totals.subtotalPaise)} />
@@ -265,12 +252,10 @@ export function CartClient() {
                 </dd>
               </div>
             </dl>
-
             <ButtonLink href="/checkout" size="lg" fullWidth className="mt-6">
               Proceed to checkout
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </ButtonLink>
-
             <p className="mt-4 text-center text-xs leading-relaxed text-ink-400">
               Secure payment · UPI, cards, net banking &amp; cash on delivery
             </p>
@@ -280,7 +265,6 @@ export function CartClient() {
     </div>
   );
 }
-
 function Row({
   label,
   value,
@@ -299,16 +283,15 @@ function Row({
     </div>
   );
 }
-/** A single cart line: thumbnail, variant, stepper and remove/save actions. */
+/** < single cart line: thumbnail, variant, stepper and remove/save actions. */
 function CartRow({ entry }: { entry: CartEntry }) {
   const { setQuantity, removeItem } = useCart();
   const { add: addToWishlist, ids: wishlistIds } = useWishlist();
   const { toast } = useToast();
   const { line, unitPricePaise, lineTotalPaise, variant } = entry;
   const saved = wishlistIds.includes(line.productId);
-
   return (
-    <motion.li
+    <m.li
       layout
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: 'auto' }}
@@ -333,7 +316,6 @@ function CartRow({ entry }: { entry: CartEntry }) {
             />
           )}
         </Link>
-
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -356,12 +338,10 @@ function CartRow({ entry }: { entry: CartEntry }) {
                 </p>
               )}
             </div>
-
             <span className="shrink-0 text-base font-extrabold tabular-nums text-ink-900">
               {formatPrice(lineTotalPaise)}
             </span>
           </div>
-
           <div className="mt-auto flex flex-wrap items-center gap-2 pt-3">
             <div className="inline-flex items-center rounded-xl border border-surface-200 bg-surface-50">
               <button
@@ -388,7 +368,6 @@ function CartRow({ entry }: { entry: CartEntry }) {
                 <Plus className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
-
             <button
               type="button"
               onClick={() => {
@@ -400,7 +379,6 @@ function CartRow({ entry }: { entry: CartEntry }) {
               <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
               Remove
             </button>
-
             {!saved && (
               <button
                 type="button"
@@ -414,9 +392,6 @@ function CartRow({ entry }: { entry: CartEntry }) {
           </div>
         </div>
       </div>
-    </motion.li>
+    </m.li>
   );
 }
-
-
-

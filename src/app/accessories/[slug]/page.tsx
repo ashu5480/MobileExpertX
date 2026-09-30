@@ -18,13 +18,17 @@ import {
 } from '@/lib/config';
 import { discountPercent, formatPrice } from '@/lib/utils';
 
-interface Params {
+export interface Params {
   params: { slug: string };
 }
 
-export function generateStaticParams() {
-  return getAllAccessories().then((items) => items.map((a) => ({ slug: a.slug })));
-}
+/**
+ * The catalogue is editable from the admin panel, so these pages are
+ * incremental-static rather than frozen at build time. An admin save also calls
+ * `revalidatePath` for the affected slug, which makes the change appear on the
+ * next request; this interval is the safety net for anything that slips
+ * through.
+ */
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const item = await getAccessoryBySlug(params.slug);
@@ -78,7 +82,7 @@ export default async function AccessoryPage({ params }: Params) {
       <div className="container">
         <div className="grid gap-8 pb-16 lg:grid-cols-2 lg:gap-12">
           <div className="relative aspect-square overflow-hidden rounded-3xl border border-surface-200">
-            <AccessoryVisual accent={item.accent} name={item.name} />
+            <AccessoryVisual accent={item.accent} name={item.name} image={item.image} alt={item.name} priority />
             {off > 0 && (
               <span className="absolute left-4 top-4 rounded-full bg-emerald-500 px-3 py-1.5 text-xs font-bold text-white">
                 {off}% OFF
@@ -222,7 +226,7 @@ export default async function AccessoryPage({ params }: Params) {
                     className="group flex h-full flex-col overflow-hidden rounded-3xl border border-surface-200 bg-white shadow-soft transition-all hover:-translate-y-1.5 hover:shadow-lift"
                   >
                     <div className="aspect-square overflow-hidden">
-                      <AccessoryVisual accent={r.accent} name={r.name} />
+                      <AccessoryVisual accent={r.accent} name={r.name} image={r.image} alt={r.name} />
                     </div>
                     <div className="flex flex-1 flex-col p-4">
                       <h3 className="line-clamp-2 text-sm font-semibold text-ink-900 transition-colors group-hover:text-brand-600">
@@ -244,3 +248,14 @@ export default async function AccessoryPage({ params }: Params) {
 }
 
 
+
+/**
+ * Rendered per request, not prerendered.
+ *
+ * Two reasons. The catalogue is editable from the admin panel, so a frozen
+ * build would show stale prices. And a statically generated route that
+ * renders 
+otFound() for an unknown slug answers 200 with a soft-404
+ * body, which search engines index as a real page.
+ */
+export const dynamic = 'force-dynamic';

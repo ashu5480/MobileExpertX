@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { CheckCircle2, MessageCircle, Phone, Send } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
@@ -14,7 +14,6 @@ import {
   siteConfig,
   whatsappMessages,
 } from '@/lib/config';
-
 /**
  * Contact form. Client-side Zod gives instant feedback; the identical schema
  * runs again inside `POST /api/contact` and the server sanitises every field.
@@ -31,7 +30,6 @@ export function ContactForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState<string | null>(null);
-
   const set = (key: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => {
@@ -41,7 +39,6 @@ export function ContactForm() {
       return next;
     });
   };
-
   const submit = async () => {
     const parsed = contactSchema.safeParse(form);
     if (!parsed.success) {
@@ -56,7 +53,6 @@ export function ContactForm() {
       });
       return;
     }
-
     setSubmitting(true);
     try {
       const { message } = await contactApi.submit(parsed.data);
@@ -75,10 +71,9 @@ export function ContactForm() {
       setSubmitting(false);
     }
   };
-
   if (sent) {
     return (
-      <motion.div
+      <m.div
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
         className="rounded-3xl border border-emerald-500/25 bg-white p-8 text-center shadow-card"
@@ -108,10 +103,9 @@ export function ContactForm() {
             Call {siteConfig.contact.phoneDisplay}
           </a>
         </div>
-      </motion.div>
+      </m.div>
     );
   }
-
   return (
     <form
       onSubmit={(e) => {
@@ -128,7 +122,6 @@ export function ContactForm() {
         For anything urgent, WhatsApp is faster — we usually reply within minutes
         during business hours.
       </p>
-
       <div className="mt-7 space-y-5">
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Your name" htmlFor="c-name" error={errors.name} required>
@@ -160,7 +153,6 @@ export function ContactForm() {
             />
           </Field>
         </div>
-
         <Field label="Email" htmlFor="c-email" error={errors.email} required>
           <Input
             id="c-email"
@@ -172,7 +164,6 @@ export function ContactForm() {
             error={errors.email}
           />
         </Field>
-
         <Field label="Subject" htmlFor="c-subject" error={errors.subject} required>
           <Input
             id="c-subject"
@@ -182,7 +173,6 @@ export function ContactForm() {
             error={errors.subject}
           />
         </Field>
-
         <Field
           label="Message"
           htmlFor="c-message"
@@ -200,7 +190,6 @@ export function ContactForm() {
           />
         </Field>
       </div>
-
       <Button
         type="submit"
         size="lg"
@@ -214,4 +203,3 @@ export function ContactForm() {
     </form>
   );
 }
-

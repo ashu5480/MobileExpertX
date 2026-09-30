@@ -11,12 +11,12 @@ import { cn } from '@/lib/utils';
  */
 
 const PALETTE = [
-  ['#2563FF', '#7C3AED'],
-  ['#7C3AED', '#2563FF'],
-  ['#0EA5E9', '#2563FF'],
-  ['#7C3AED', '#00D9FF'],
-  ['#2563FF', '#00D9FF'],
-  ['#4F46E5', '#7C3AED'],
+  ['#10B981', '#0D9488'],
+  ['#0D9488', '#10B981'],
+  ['#5EEAD4', '#10B981'],
+  ['#0D9488', '#6EE7B3'],
+  ['#10B981', '#6EE7B3'],
+  ['#047857', '#0D9488'],
 ] as const;
 
 function hash(value: string): number {

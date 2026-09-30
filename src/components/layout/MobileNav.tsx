@@ -1,8 +1,8 @@
 'use client';
 
+import { m, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
 import { Heart, MessageCircle, Phone, ShoppingBag, User, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Logo } from '@/components/ui/Logo';
@@ -11,7 +11,6 @@ import { NAV_LINKS } from './Navbar';
 import { useCart, useUI } from '@/store/cartStore';
 import { useWishlist } from '@/store/wishlistStore';
 import { cn } from '@/lib/utils';
-
 /**
  * Full-screen mobile navigation.
  *
@@ -25,9 +24,7 @@ export function MobileNav() {
   const { count } = useCart();
   const { count: wishlistCount, isHydrated } = useWishlist();
   const [mounted, setMounted] = useState(false);
-
   useEffect(() => setMounted(true), []);
-
   useEffect(() => {
     if (!isMenuOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -36,16 +33,14 @@ export function MobileNav() {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [isMenuOpen, setMenuOpen]);
-
   // Close the panel whenever the route changes.
   useEffect(() => {
     setMenuOpen(false);
   }, [pathname, setMenuOpen]);
-
   return (
     <AnimatePresence>
       {isMenuOpen && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -61,8 +56,7 @@ export function MobileNav() {
             onClick={() => setMenuOpen(false)}
             className="absolute inset-0 h-full w-full cursor-default bg-ink-900/50 backdrop-blur-sm"
           />
-
-          <motion.nav
+          <m.nav
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -80,7 +74,6 @@ export function MobileNav() {
                 <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
-
             {/* Quick actions */}
             <div className="grid grid-cols-3 gap-2.5 border-b border-surface-200 px-5 py-4">
               <QuickAction
@@ -115,13 +108,12 @@ export function MobileNav() {
                 <span className="text-xs font-semibold text-ink-700">Cart</span>
               </button>
             </div>
-
             {/* Links */}
             <ul className="flex-1 overflow-y-auto px-3 py-3">
               {NAV_LINKS.map((link, i) => {
                 const active = link.href === '/' ? pathname === '/' : pathname.startsWith(link.href);
                 return (
-                  <motion.li
+                  <m.li
                     key={link.href}
                     initial={{ opacity: 0, x: 24 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -143,11 +135,10 @@ export function MobileNav() {
                         <span className="h-1.5 w-1.5 rounded-full bg-brand-500" aria-hidden="true" />
                       )}
                     </Link>
-                  </motion.li>
+                  </m.li>
                 );
               })}
             </ul>
-
             {/* Contact CTAs — the two things a visitor most often wants */}
             <div className="space-y-2.5 border-t border-surface-200 bg-surface-50 p-4 pb-safe">
               <a
@@ -169,13 +160,12 @@ export function MobileNav() {
                 Call {siteConfig.contact.phoneDisplay}
               </a>
             </div>
-          </motion.nav>
-        </motion.div>
+          </m.nav>
+        </m.div>
       )}
     </AnimatePresence>
   );
 }
-
 function QuickAction({
   href,
   icon: Icon,

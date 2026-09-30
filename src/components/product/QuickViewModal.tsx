@@ -1,7 +1,7 @@
 'use client';
 
+import { m } from 'framer-motion';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { Check, MessageCircle, Phone, ShoppingBag } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
@@ -16,7 +16,6 @@ import { buildTelUrl, buildWhatsAppUrl, siteConfig, whatsappMessages } from '@/l
 import { discountPercent, formatPrice } from '@/lib/utils';
 import { OptionPill } from '@/components/ui/Field';
 import type { Product } from '@/types';
-
 /**
  * Quick view — the full buying decision without leaving the grid.
  *
@@ -32,11 +31,9 @@ export function QuickViewModal({
 }) {
   const { addItem } = useCart();
   const { success } = useToast();
-
   const [color, setColor] = useState('');
   const [storage, setStorage] = useState('');
   const [ram, setRam] = useState('');
-
   // Reset the selections whenever a different product is opened.
   useEffect(() => {
     if (!product) return;
@@ -44,19 +41,15 @@ export function QuickViewModal({
     setStorage(product.storages[0] ?? '');
     setRam(product.rams[0] ?? '');
   }, [product]);
-
   if (!product) return null;
-
   const variantKey = makeVariantKey({ color, storage, ram });
   const price = variantPrice(product, variantKey);
   const off = discountPercent(price, product.mrp);
-
   const handleAdd = () => {
     addItem(product, variantKey);
     success('Added to cart', `${product.name} · ${[color, storage].filter(Boolean).join(' · ')}`);
     onClose();
   };
-
   return (
     <Modal
       open={Boolean(product)}
@@ -83,7 +76,6 @@ export function QuickViewModal({
               <ConditionBadge condition={product.condition} />
             </div>
           </div>
-
           <ul className="mt-4 space-y-1.5">
             {product.highlights.slice(0, 4).map((h) => (
               <li key={h} className="flex items-center gap-2 text-sm text-ink-600">
@@ -93,14 +85,12 @@ export function QuickViewModal({
             ))}
           </ul>
         </div>
-
         {/* Details + variants */}
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
             <Rating value={product.rating} size={14} showValue />
             <span className="text-xs text-ink-500">({product.reviewCount} reviews)</span>
           </div>
-
           <div className="mt-3 flex flex-wrap items-baseline gap-2">
             <span className="text-2xl font-extrabold tracking-tight text-ink-900">
               {formatPrice(price)}
@@ -117,7 +107,6 @@ export function QuickViewModal({
             )}
           </div>
           <p className="mt-1 text-xs text-emerald-600">Inclusive of all taxes</p>
-
           <div className="mt-5 space-y-4">
             <VariantGroup label="Colour">
               {product.colors.map((c) => (
@@ -130,7 +119,6 @@ export function QuickViewModal({
                 />
               ))}
             </VariantGroup>
-
             <VariantGroup label="Storage">
               {product.storages.map((s) => (
                 <OptionPill key={s} selected={storage === s} onClick={() => setStorage(s)}>
@@ -138,7 +126,6 @@ export function QuickViewModal({
                 </OptionPill>
               ))}
             </VariantGroup>
-
             {product.rams.length > 1 && (
               <VariantGroup label="RAM">
                 {product.rams.map((r) => (
@@ -149,7 +136,6 @@ export function QuickViewModal({
               </VariantGroup>
             )}
           </div>
-
           <p className="mt-4 text-xs text-ink-500">
             {product.stock > 0 ? (
               <>
@@ -160,7 +146,6 @@ export function QuickViewModal({
               <span className="font-semibold text-rose-600">Out of stock</span>
             )}
           </p>
-
           <div className="mt-5 space-y-2.5">
             <Button onClick={handleAdd} fullWidth disabled={product.stock <= 0} size="lg">
               <ShoppingBag className="h-4 w-4" aria-hidden="true" />
@@ -169,7 +154,6 @@ export function QuickViewModal({
             <ButtonLink href={`/shop/${product.slug}`} variant="outline" fullWidth>
               View full details
             </ButtonLink>
-
             <div className="grid grid-cols-2 gap-2.5 pt-1">
               <a
                 href={buildWhatsAppUrl(
@@ -200,7 +184,6 @@ export function QuickViewModal({
     </Modal>
   );
 }
-
 function VariantGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
@@ -209,7 +192,6 @@ function VariantGroup({ label, children }: { label: string; children: React.Reac
     </div>
   );
 }
-
 /** Colour chip: a real swatch, not an unlabelled coloured dot. */
 function Swatch({
   selected,
@@ -233,18 +215,18 @@ function Swatch({
       style={{
         background: color,
         boxShadow: selected
-          ? '0 0 0 2px #fff, 0 0 0 4px #2563FF'
+          ? '0 0 0 2px #fff, 0 0 0 4px #10B981'
           : 'inset 0 0 0 1px rgba(8,9,13,0.12)',
       }}
     >
       {selected && (
-        <motion.span
+        <m.span
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           className="absolute inset-0 grid place-items-center"
         >
           <Check className="h-4 w-4 text-white drop-shadow" aria-hidden="true" />
-        </motion.span>
+        </m.span>
       )}
     </button>
   );

@@ -39,10 +39,10 @@ export default function SellPhonePage() {
         ]}
       />
 
-      <section className="dark-section relative isolate overflow-hidden bg-ink-900 pb-16 pt-12 sm:pb-20 sm:pt-16">
+      <section className="light-section pb-16 pt-12 sm:pb-20 sm:pt-16">
         <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-          <div className="absolute inset-0 bg-aurora opacity-80" />
-          <div className="absolute inset-0 bg-grid-dark bg-grid opacity-20 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_40%,#000,transparent)]" />
+          <div className="light-aurora" />
+          <div className="light-grid" />
         </div>
 
         <div className="container">
@@ -51,10 +51,10 @@ export default function SellPhonePage() {
             dark
           />
           <div className="mt-6 max-w-2xl">
-            <h1 className="text-display-lg font-extrabold text-white">
+            <h1 className="text-display-lg font-extrabold text-ink-900">
               Turn your old phone into cash.
             </h1>
-            <p className="mt-5 text-base leading-relaxed text-white/60 sm:text-lg">
+            <p className="mt-5 text-base leading-relaxed text-ink-600 sm:text-lg">
               Eight quick questions, an instant honest valuation, and cash in hand the
               same day. No lowball offers, and we never reduce a confirmed quote.
             </p>

@@ -37,8 +37,8 @@ export function Logo({
         >
           <defs>
             <linearGradient id="mex-mark" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#2563FF" />
-              <stop offset="100%" stopColor="#7C3AED" />
+              <stop offset="0%" stopColor="#10B981" />
+              <stop offset="100%" stopColor="#0D9488" />
             </linearGradient>
           </defs>
           <rect
@@ -66,7 +66,7 @@ export function Logo({
             strokeWidth="1.5"
             strokeLinecap="round"
           />
-          <circle cx="20" cy="28.5" r="1.4" fill="#00D9FF" />
+          <circle cx="20" cy="28.5" r="1.4" fill="#6EE7B3" />
         </svg>
       </span>
 

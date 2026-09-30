@@ -1,6 +1,6 @@
 import 'server-only';
 import { redirect } from 'next/navigation';
-import { currentUser, type User } from '@/lib/auth';
+import { currentUser, ensureAdminUser, type User } from '@/lib/auth';
 
 /**
  * Server-side route guards.
@@ -13,16 +13,34 @@ import { currentUser, type User } from '@/lib/auth';
  */
 
 export function requireUser(returnTo = '/account'): User {
+  bootstrapAdmin();
   const user = currentUser();
   if (!user) redirect(`/login?next=${encodeURIComponent(returnTo)}`);
   return user;
 }
 
 export function requireAdmin(): User {
+  bootstrapAdmin();
   const user = currentUser();
   if (!user) redirect(`/login?next=${encodeURIComponent('/admin')}`);
   if (user.role !== 'admin') redirect('/account');
   return user;
+}
+
+/**
+ * Seeds the admin account on first use.
+ *
+ * Without this, the admin only exists after a customer happens to register,
+ * which makes a fresh install mysteriously unable to sign in. Called on every
+ * guarded render; it is a cheap `SELECT COUNT(*)` once the account exists.
+ * Failures are swallowed so a misconfigured env var can never 500 a page.
+ */
+function bootstrapAdmin(): void {
+  try {
+    ensureAdminUser();
+  } catch (error) {
+    console.error('[auth] admin bootstrap failed:', error);
+  }
 }
 
 /** Non-redirecting variants for API route handlers. */

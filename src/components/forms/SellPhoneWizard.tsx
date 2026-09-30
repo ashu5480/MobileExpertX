@@ -135,7 +135,7 @@ export function SellPhoneWizard({
                     className={cn(
                       'relative rounded-2xl border-2 px-4 py-4 text-left transition-all duration-250',
                       state.brand === b.name
-                        ? 'border-brand-500 bg-brand-500/6 shadow-[0_0_0_3px_rgba(37,99,255,0.1)]'
+                        ? 'border-brand-500 bg-brand-500/6 text-brand-700 shadow-[0_0_0_3px_rgba(16,185,129,0.14)]'
                         : 'border-surface-200 bg-white hover:border-brand-300 hover:bg-brand-500/4',
                     )}
                   >

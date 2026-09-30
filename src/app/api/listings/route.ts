@@ -10,7 +10,7 @@ import {
   updateListing,
 } from '@/lib/listings';
 import { isStoredUpload, storeImages, UploadError } from '@/lib/upload';
-import { toPaise, validateListing } from '@/lib/listing-input';
+import { toPaise, validateListing } from '@/lib/listing-shared';
 import { jsonError, readJson } from '@/lib/api-helpers';
 
 export const runtime = 'nodejs';

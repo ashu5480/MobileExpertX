@@ -18,7 +18,7 @@ export const accessories: AccessoryProduct[] = [
     rating: 4.7,
     reviewCount: 284,
     image: '',
-    accent: '#2563FF',
+    accent: '#10B981',
     description:
       'A palm-sized 100W GaN charger with two USB-C ports and one USB-A. Charges a 5,000 mAh phone to 50% in under 15 minutes and can drive a laptop from the same brick.',
     stock: 58,
@@ -37,7 +37,7 @@ export const accessories: AccessoryProduct[] = [
     rating: 4.6,
     reviewCount: 197,
     image: '',
-    accent: '#7C3AED',
+    accent: '#0D9488',
     description:
       'Snaps magnetically to MagSafe-compatible phones and starts charging immediately. 10,000 mAh, 20W USB-C PD, and a low-current mode for earbuds.',
     stock: 44,
@@ -56,7 +56,7 @@ export const accessories: AccessoryProduct[] = [
     rating: 4.5,
     reviewCount: 412,
     image: '',
-    accent: '#00D9FF',
+    accent: '#6EE7B3',
     description:
       'A 240W-rated braided cable with an E-marker chip, tested to 25,000 bends. Supports 100W charging and 480 Mbps data transfer.',
     stock: 120,
@@ -94,7 +94,7 @@ export const accessories: AccessoryProduct[] = [
     rating: 4.3,
     reviewCount: 566,
     image: '',
-    accent: '#0EA5E9',
+    accent: '#5EEAD4',
     description:
       '9H hardness tempered glass with an oleophobic coating and an alignment tray. Full coverage with a case-friendly edge.',
     stock: 210,
@@ -113,7 +113,7 @@ export const accessories: AccessoryProduct[] = [
     rating: 4.5,
     reviewCount: 341,
     image: '',
-    accent: '#7C3AED',
+    accent: '#0D9488',
     description:
       'Active noise cancelling earbuds with 32 hours of total playback, wireless charging and IPX5 sweat resistance. Low-latency mode for gaming.',
     stock: 39,
@@ -151,7 +151,7 @@ export const accessories: AccessoryProduct[] = [
     rating: 4.4,
     reviewCount: 227,
     image: '',
-    accent: '#00D9FF',
+    accent: '#6EE7B3',
     description:
       'A 1.85-inch AMOLED fitness watch with SpO2, heart-rate variability, sleep staging and 14-day battery life. Over 100 workout modes.',
     stock: 27,
@@ -170,7 +170,7 @@ export const accessories: AccessoryProduct[] = [
     rating: 4.3,
     reviewCount: 156,
     image: '',
-    accent: '#2563FF',
+    accent: '#10B981',
     description:
       'A 45W dual-port car charger with a built-in voltage display so you can confirm your car is actually supplying the rated current.',
     stock: 64,
@@ -189,7 +189,7 @@ export const accessories: AccessoryProduct[] = [
     rating: 4.4,
     reviewCount: 234,
     image: '',
-    accent: '#7C3AED',
+    accent: '#0D9488',
     description:
       'A weighted aluminium desktop stand that folds flat to 12 mm and adjusts through 12 viewing angles. Anti-slip silicone pads.',
     stock: 92,
@@ -227,7 +227,7 @@ export const accessories: AccessoryProduct[] = [
     rating: 4,
     reviewCount: 187,
     image: '',
-    accent: '#00D9FF',
+    accent: '#6EE7B3',
     description:
       'A 6-suction-cup dash mount with a rotating magnetic head that holds the phone firmly over rough roads.',
     stock: 48,

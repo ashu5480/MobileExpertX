@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import {
   Headset,
   IndianRupee,
@@ -13,7 +13,6 @@ import { SectionHeading } from '@/components/ui/SectionHeading';
 import { trustPillars } from '@/data/catalog';
 import { cn } from '@/lib/utils';
 import { stagger, staggerItem, viewportOnce } from '@/lib/motion';
-
 const ICONS = {
   'shield-check': ShieldCheck,
   'indian-rupee': IndianRupee,
@@ -22,7 +21,6 @@ const ICONS = {
   truck: Truck,
   headset: Headset,
 } as const;
-
 /**
  * "Why choose us" trust section.
  *
@@ -34,7 +32,6 @@ export function TrustSection() {
   return (
     <section className="section relative overflow-hidden bg-surface-50" aria-labelledby="trust-heading">
       <div className="pointer-events-none absolute inset-0 bg-grid-light bg-grid opacity-40 [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000,transparent)]" aria-hidden="true" />
-
       <div className="container relative">
         <SectionHeading
           id="trust-heading"
@@ -43,8 +40,7 @@ export function TrustSection() {
           description="We are not the only phone shop. These are the things we actually do differently."
           align="center"
         />
-
-        <motion.ul
+        <m.ul
           variants={stagger(0.06)}
           initial="hidden"
           whileInView="show"
@@ -54,7 +50,7 @@ export function TrustSection() {
           {trustPillars.map((pillar) => {
             const Icon = ICONS[pillar.icon as keyof typeof ICONS];
             return (
-              <motion.li
+              <m.li
                 key={pillar.title}
                 variants={staggerItem}
                 className="group relative"
@@ -71,11 +67,9 @@ export function TrustSection() {
                     className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-brand-500/10 opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100"
                     aria-hidden="true"
                   />
-
                   <span className="relative grid h-12 w-12 place-items-center rounded-2xl bg-brand-500/10 text-brand-500 transition-all duration-400 group-hover:bg-brand-gradient group-hover:text-white group-hover:shadow-glow">
                     <Icon className="h-6 w-6" aria-hidden="true" />
                   </span>
-
                   <h3 className="relative mt-5 text-lg font-bold tracking-tight text-ink-900">
                     {pillar.title}
                   </h3>
@@ -83,10 +77,10 @@ export function TrustSection() {
                     {pillar.body}
                   </p>
                 </div>
-              </motion.li>
+              </m.li>
             );
           })}
-        </motion.ul>
+        </m.ul>
       </div>
     </section>
   );

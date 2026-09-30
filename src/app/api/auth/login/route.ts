@@ -1,5 +1,6 @@
 import {
   createSession,
+  ensureAdminUser,
   findUserByEmail,
   setSessionCookie,
   verifyPassword,
@@ -15,6 +16,14 @@ export async function POST(request: Request) {
   // far too slow for online password guessing.
   if (!rateLimit(clientKey(request, 'login'), 10, 15 * 60 * 1000)) {
     return jsonError('Too many attempts. Please try again in a few minutes.', undefined, 429);
+  }
+
+  // Seed the admin on first sign-in attempt, so a fresh install works
+  // immediately instead of needing a customer to register first.
+  try {
+    ensureAdminUser();
+  } catch (error) {
+    console.error('[auth] admin bootstrap failed:', error);
   }
 
   const body = await readJson(request);

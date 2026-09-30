@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ArrowRight, Clock, Phone, Wrench } from 'lucide-react';
 import { ButtonLink } from '@/components/ui/Button';
 import { SectionHeading } from '@/components/ui/SectionHeading';
@@ -9,7 +9,6 @@ import { repairServices } from '@/data/repairs';
 import { siteConfig } from '@/lib/config';
 import { formatPrice } from '@/lib/utils';
 import { stagger, staggerItem, viewportOnce } from '@/lib/motion';
-
 /**
  * Home-page repair teaser.
  *
@@ -23,7 +22,6 @@ export function RepairSection() {
     ...repairServices.filter((s) => s.popular),
     ...repairServices.filter((s) => !s.popular),
   ].slice(0, 6);
-
   return (
     <section className="section bg-surface-50" aria-labelledby="repair-heading">
       <div className="container">
@@ -39,8 +37,7 @@ export function RepairSection() {
             </ButtonLink>
           }
         />
-
-        <motion.ul
+        <m.ul
           variants={stagger(0.06)}
           initial="hidden"
           whileInView="show"
@@ -48,7 +45,7 @@ export function RepairSection() {
           className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
         >
           {shown.map((service) => (
-            <motion.li key={service.id} variants={staggerItem}>
+            <m.li key={service.id} variants={staggerItem}>
               <a
                 href={`/repair/${service.slug}`}
                 className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-surface-200 bg-white p-6 shadow-soft transition-all duration-400 ease-premium hover:-translate-y-1.5 hover:border-brand-200 hover:shadow-lift"
@@ -59,19 +56,17 @@ export function RepairSection() {
                     className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-500/10 text-brand-500 transition-transform duration-500 group-hover:scale-110"
                   />
                   {service.popular && (
-                    <span className="rounded-full bg-ink-900 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+                    <span className="rounded-full bg-brand-gradient px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
                       Popular
                     </span>
                   )}
                 </div>
-
                 <h3 className="mt-5 text-lg font-bold tracking-tight text-ink-900">
                   {service.name}
                 </h3>
                 <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-600">
                   {service.description}
                 </p>
-
                 <div className="mt-5 space-y-2 border-t border-surface-200 pt-4">
                   <div className="flex items-center justify-between text-sm">
                     <span className="inline-flex items-center gap-1.5 text-ink-500">
@@ -91,10 +86,9 @@ export function RepairSection() {
                   </div>
                 </div>
               </a>
-            </motion.li>
+            </m.li>
           ))}
-        </motion.ul>
-
+        </m.ul>
         <div className="mt-10 rounded-3xl border border-surface-200 bg-white p-6 shadow-soft sm:p-8">
           <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
             <div className="max-w-xl">

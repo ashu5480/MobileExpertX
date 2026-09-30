@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { m, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, BatteryCharging, Recycle, ShieldCheck, Sparkles } from 'lucide-react';
 import { useRef } from 'react';
 import { ButtonLink } from '@/components/ui/Button';
@@ -9,7 +9,6 @@ import { ProductCard } from '@/components/product/ProductCard';
 import { products } from '@/data/products';
 import { stagger, staggerItem, viewportOnce } from '@/lib/motion';
 import { usePrefersReducedMotion } from '@/components/providers/MotionProvider';
-
 /**
  * "Buy refurbished" — a dark band that breaks up the white page and gives the
  * value proposition room to breathe. The phone drifts with a slow parallax
@@ -23,60 +22,54 @@ export function RefurbishedSection() {
     offset: ['start end', 'end start'],
   });
   const y = useTransform(scrollYProgress, [0, 1], [40, -40]);
-
   const refurbished = products.filter((p) => p.condition === 'refurbished').slice(0, 3);
-
   return (
     <section
       ref={ref}
-      className="dark-section relative isolate overflow-hidden bg-ink-900 py-20 sm:py-24"
+      className="light-section-tint py-20 sm:py-24"
       aria-labelledby="refurbished-heading"
     >
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-        <div className="absolute inset-0 bg-aurora opacity-60" />
-        <div className="absolute inset-0 bg-grid-dark bg-grid opacity-20 [mask-image:radial-gradient(ellipse_at_center,#000,transparent_75%)]" />
+        <div className="light-aurora" />
+        <div className="light-grid" />
       </div>
-
       <div className="container">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           {/* Copy */}
-          <motion.div
+          <m.div
             variants={stagger(0.08)}
             initial="hidden"
             whileInView="show"
             viewport={viewportOnce}
           >
-            <motion.p
+            <m.p
               variants={staggerItem}
-              className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/5 px-3.5 py-1.5 text-xs font-semibold text-white/80 backdrop-blur-md"
+              className="light-chip px-3.5 py-1.5"
             >
-              <Recycle className="h-3.5 w-3.5 text-cyan-400" aria-hidden="true" />
+              <Recycle className="h-3.5 w-3.5 text-brand-600" aria-hidden="true" />
               Grade-A refurbished
-            </motion.p>
-
-            <motion.h2
+            </m.p>
+            <m.h2
               id="refurbished-heading"
               variants={staggerItem}
-              className="mt-6 text-display-sm font-extrabold text-white"
+              className="mt-6 text-display-sm font-extrabold text-ink-900"
             >
               Flagship quality.
               <br />
               <span className="bg-brand-gradient bg-clip-text text-transparent">
                 Up to 40% less.
               </span>
-            </motion.h2>
-
-            <motion.p
+            </m.h2>
+            <m.p
               variants={staggerItem}
-              className="mt-5 max-w-lg text-base leading-relaxed text-white/60"
+              className="mt-5 max-w-lg text-base leading-relaxed text-ink-600"
             >
               Our refurbished phones are never B-grade sold as A. Every unit gets
               a replacement battery, a calibrated display, a zeroed data partition
               and a 42-point inspection — with the exact battery health published
               before you buy.
-            </motion.p>
-
-            <motion.ul
+            </m.p>
+            <m.ul
               variants={staggerItem}
               className="mt-8 grid gap-3 sm:grid-cols-3"
             >
@@ -87,25 +80,23 @@ export function RefurbishedSection() {
               ].map((item) => (
                 <li
                   key={item.label}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-md transition-colors hover:border-white/20 hover:bg-white/8"
+                  className="rounded-2xl border border-surface-200 bg-white/85 p-4 shadow-soft backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-card"
                 >
-                  <item.icon className="h-5 w-5 text-cyan-400" aria-hidden="true" />
-                  <p className="mt-2.5 text-sm font-bold text-white">{item.label}</p>
-                  <p className="mt-0.5 text-xs text-white/50">{item.detail}</p>
+                  <item.icon className="h-5 w-5 text-brand-600" aria-hidden="true" />
+                  <p className="mt-2.5 text-sm font-bold text-ink-900">{item.label}</p>
+                  <p className="mt-0.5 text-xs text-ink-500">{item.detail}</p>
                 </li>
               ))}
-            </motion.ul>
-
-            <motion.div variants={staggerItem} className="mt-8">
-              <ButtonLink href="/shop?condition=refurbished" size="lg" variant="dark">
+            </m.ul>
+            <m.div variants={staggerItem} className="mt-8">
+              <ButtonLink href="/shop?condition=refurbished" size="lg">
                 Shop refurbished
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </ButtonLink>
-            </motion.div>
-          </motion.div>
-
+            </m.div>
+          </m.div>
           {/* Drifting cards */}
-          <motion.div
+          <m.div
             style={reduced ? undefined : { y }}
             className="grid grid-cols-2 gap-4 sm:gap-5"
           >
@@ -117,7 +108,7 @@ export function RefurbishedSection() {
                 <ProductCard product={product} />
               </div>
             ))}
-          </motion.div>
+          </m.div>
         </div>
       </div>
     </section>

@@ -22,6 +22,11 @@ yarn-error.log*
 /coverage
 /tests/.tmp
 
+# Runtime data — the SQLite database and customer uploads.
+# This is real customer data: never commit it.
+/.data
+/public/uploads
+
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts

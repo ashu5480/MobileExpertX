@@ -1,12 +1,19 @@
 import 'server-only';
-import { db, row, rows } from '@/lib/db';
+import { db, rows } from '@/lib/db';
+import {
+  QUEUE_STATUSES,
+  type QueueName,
+  type QueueRow,
+} from '@/lib/admin-shared';
 
 /**
- * Read models for the admin panel.
+ * Read models for the admin panel. Server-only: it queries SQLite.
  *
  * Aggregates run in SQL rather than in JavaScript so the dashboard cost does
  * not grow with the size of the table.
  */
+
+export { readPayload, type QueueName, type QueueRow } from '@/lib/admin-shared';
 
 export interface Count {
   n: number;
@@ -33,24 +40,12 @@ export function adminStats() {
   };
 }
 
-export interface QueueRow {
-  id: string;
-  reference: string;
-  status: string;
-  createdAt: string;
-  payload: string;
-  quotedPaise?: number;
-  totalPaise?: number;
-}
-
 const QUEUES = {
   orders: { table: 'orders', ref: 'orderNumber' },
   bookings: { table: 'bookings', ref: 'reference' },
   sellRequests: { table: 'sell_requests', ref: 'reference' },
   inquiries: { table: 'inquiries', ref: 'id' },
 } as const;
-
-export type QueueName = keyof typeof QUEUES;
 
 /** Paginated queue rows for the admin tables. */
 export function listQueue(
@@ -60,7 +55,8 @@ export function listQueue(
 ): { items: QueueRow[]; total: number; page: number; totalPages: number } {
   const { table, ref } = QUEUES[queue];
   const total = count(`SELECT COUNT(*) AS n FROM ${table}`);
-  const money = queue === 'orders' ? 'totalPaise,' : queue === 'sellRequests' ? 'quotedPaise,' : '';
+  const money =
+    queue === 'orders' ? 'totalPaise,' : queue === 'sellRequests' ? 'quotedPaise,' : '';
 
   const items = rows<QueueRow>(
     db
@@ -73,16 +69,12 @@ export function listQueue(
       .all(pageSize, (Math.max(1, page) - 1) * pageSize),
   );
 
-  return { items, total, page: Math.max(1, page), totalPages: Math.max(1, Math.ceil(total / pageSize)) };
-}
-
-/** Parse the stored JSON blob defensively — old rows may predate a field. */
-export function readPayload<T = Record<string, unknown>>(json: string): T {
-  try {
-    return JSON.parse(json) as T;
-  } catch {
-    return {} as T;
-  }
+  return {
+    items,
+    total,
+    page: Math.max(1, page),
+    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+  };
 }
 
 export function setQueueStatus(
@@ -97,8 +89,18 @@ export function setQueueStatus(
   );
 }
 
-export function listUsersWithCounts() {
-  return (
+export interface UserRow {
+  id: string;
+  email: string;
+  name: string;
+  phone: string | null;
+  role: string;
+  createdAt: string;
+  listingCount: number;
+}
+
+export function listUsersWithCounts(): UserRow[] {
+  return rows<UserRow>(
     db
       .prepare(
         `SELECT u.id, u.email, u.name, u.phone, u.role, u.createdAt,
@@ -107,6 +109,6 @@ export function listUsersWithCounts() {
           ORDER BY u.createdAt DESC
           LIMIT 200`,
       )
-      .all() as Array<Record<string, unknown>>
-  ).map((r) => row(r));
+      .all() as unknown[],
+  );
 }

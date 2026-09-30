@@ -1,11 +1,10 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useState } from 'react';
 import { Check, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Product } from '@/types';
-
 const GROUP_LABELS: Record<string, string> = {
   display: 'Display',
   performance: 'Performance',
@@ -15,20 +14,16 @@ const GROUP_LABELS: Record<string, string> = {
   body: 'Design & build',
   software: 'Software',
 };
-
 /** Collapsible spec table, grouped by category. The first group starts open. */
 export function ProductSpecs({ product }: { product: Product }) {
   const groups = product.specs.reduce<Record<string, Product['specs']>>((acc, spec) => {
     (acc[spec.group] ??= []).push(spec);
     return acc;
   }, {});
-
   const visibleGroups = Object.keys(groups).filter((g) => groups[g]?.length);
   const [open, setOpen] = useState<string[]>(visibleGroups.slice(0, 1));
-
   const toggle = (key: string) =>
     setOpen((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
-
   return (
     <div className="divide-y divide-surface-200 overflow-hidden rounded-3xl border border-surface-200 bg-white">
       {visibleGroups.map((group) => {
@@ -55,7 +50,7 @@ export function ProductSpecs({ product }: { product: Product }) {
               </button>
             </h3>
             {expanded && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
@@ -74,7 +69,7 @@ export function ProductSpecs({ product }: { product: Product }) {
                     </div>
                   ))}
                 </dl>
-              </motion.div>
+              </m.div>
             )}
           </div>
         );
@@ -82,7 +77,6 @@ export function ProductSpecs({ product }: { product: Product }) {
     </div>
   );
 }
-
 /** Highlight chips shown above the description. */
 export function ProductHighlights({ product }: { product: Product }) {
   return (

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { LayoutDashboard, Package, Users, LogOut, Wrench, Inbox, Receipt } from 'lucide-react';
+import { LayoutDashboard, Package, Users, LogOut, Wrench, Inbox, Receipt, Boxes } from 'lucide-react';
 import { requireAdmin } from '@/lib/guards';
 import { SignOutButton } from '@/components/account/SignOutButton';
 
@@ -14,7 +14,8 @@ export const dynamic = 'force-dynamic';
 
 const NAV = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/items', label: 'All items', icon: Package },
+  { href: '/admin/catalogue', label: 'Catalogue', icon: Boxes },
+  { href: '/admin/items', label: 'Customer items', icon: Package },
   { href: '/admin/sellRequests', label: 'Trade-ins', icon: Inbox },
   { href: '/admin/bookings', label: 'Repairs', icon: Wrench },
   { href: '/admin/orders', label: 'Orders', icon: Receipt },

@@ -81,8 +81,8 @@ export function AddToCartFly() {
         style={{
           background: flySource
             ? `radial-gradient(circle at 32% 28%, ${flySource.accent}66, ${flySource.accent}22)`
-            : 'rgba(37,99,255,0.25)',
-          border: flySource ? `1px solid ${flySource.accent}66` : '1px solid rgba(37,99,255,0.25)',
+            : 'rgba(16,185,129,0.3)',
+          border: flySource ? `1px solid ${flySource.accent}66` : '1px solid rgba(16,185,129,0.3)',
         }}
         aria-hidden="true"
       />

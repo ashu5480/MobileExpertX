@@ -1,7 +1,7 @@
 'use client';
 
+import { m, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
 import { useEffect } from 'react';
 import { useCart, useUI } from '@/store/cartStore';
@@ -9,7 +9,6 @@ import { useToast } from '@/store/toastStore';
 import { ProductVisual } from '@/components/product/ProductVisual';
 import { parseVariantKey, totalsFromCart } from '@/lib/pricing';
 import { cn, formatPrice } from '@/lib/utils';
-
 /**
  * Cart drawer.
  *
@@ -22,7 +21,6 @@ export function CartDrawer() {
   const { isCartOpen, closeCart, openCart } = useUI();
   const { entries, totals, setQuantity, removeItem, count, couponCode, deliveryMethod } = useCart();
   const { toast } = useToast();
-
   useEffect(() => {
     if (!isCartOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -31,14 +29,12 @@ export function CartDrawer() {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [isCartOpen, closeCart]);
-
   const liveTotals = totalsFromCart(entries, { couponCode, deliveryMethod });
-
   return (
     <AnimatePresence>
       {isCartOpen && (
         <div className="fixed inset-0 z-[108]" role="dialog" aria-modal="true" aria-label="Shopping cart">
-          <motion.button
+          <m.button
             type="button"
             aria-label="Close cart"
             initial={{ opacity: 0 }}
@@ -48,8 +44,7 @@ export function CartDrawer() {
             onClick={closeCart}
             className="absolute inset-0 h-full w-full cursor-default bg-ink-900/55 backdrop-blur-sm"
           />
-
-          <motion.aside
+          <m.aside
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -75,7 +70,6 @@ export function CartDrawer() {
                 <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </header>
-
             {/* ── Lines ─────────────────────────────────────────────── */}
             {entries.length === 0 ? (
               <EmptyCart onBrowse={closeCart} />
@@ -86,7 +80,7 @@ export function CartDrawer() {
                     const { line, unitPricePaise, lineTotalPaise, variant, title, href, accent } = entry;
                     const key = `${line.productId}-${line.variantKey}`;
                     return (
-                      <motion.li
+                      <m.li
                         key={key}
                         layout
                         initial={{ opacity: 0, height: 0 }}
@@ -110,7 +104,6 @@ export function CartDrawer() {
                               className="h-full w-full"
                             />
                           </Link>
-
                           <div className="min-w-0 flex-1">
                             <div className="flex items-start justify-between gap-2">
                               <Link
@@ -136,7 +129,6 @@ export function CartDrawer() {
                                 <Trash2 className="h-4 w-4" aria-hidden="true" />
                               </button>
                             </div>
-
                             {!entry.accessory && (
                               <p className="mt-0.5 truncate text-xs text-ink-500">
                                 {[variant.color, variant.storage, variant.ram]
@@ -144,7 +136,6 @@ export function CartDrawer() {
                                   .join(' · ')}
                               </p>
                             )}
-
                             <div className="mt-2.5 flex items-center justify-between gap-2">
                               <div className="inline-flex items-center rounded-lg border border-surface-200 bg-surface-50">
                                 <button
@@ -171,12 +162,10 @@ export function CartDrawer() {
                                   <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                                 </button>
                               </div>
-
                               <span className="text-sm font-bold tabular-nums text-ink-900">
                                 {formatPrice(lineTotalPaise)}
                               </span>
                             </div>
-
                             {line.quantity > 1 && (
                               <p className="mt-1 text-right text-[11px] text-ink-400">
                                 {formatPrice(unitPricePaise)} each
@@ -184,13 +173,12 @@ export function CartDrawer() {
                             )}
                           </div>
                         </div>
-                      </motion.li>
+                      </m.li>
                     );
                   })}
                 </AnimatePresence>
               </ul>
             )}
-
             {/* ── Footer ────────────────────────────────────────────── */}
             {entries.length > 0 && (
               <footer className="border-t border-surface-200 bg-surface-50 px-5 py-4 pb-safe">
@@ -224,11 +212,9 @@ export function CartDrawer() {
                     </dd>
                   </div>
                 </dl>
-
                 <p className="mt-1 text-[11px] text-ink-400">
                   Inclusive of {formatPrice(liveTotals.taxPaise)} GST
                 </p>
-
                 <div className="mt-4 space-y-2.5">
                   <Link
                     href="/checkout"
@@ -247,19 +233,17 @@ export function CartDrawer() {
                     Continue shopping
                   </button>
                 </div>
-
                 <p className="mt-3 text-center text-[11px] text-ink-400">
                   Secure checkout · UPI, cards, net banking &amp; cash on delivery
                 </p>
               </footer>
             )}
-          </motion.aside>
+          </m.aside>
         </div>
       )}
     </AnimatePresence>
   );
 }
-
 /** Empty state with a helpful next action rather than a dead end. */
 function EmptyCart({ onBrowse }: { onBrowse: () => void }) {
   return (

@@ -1,9 +1,9 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { PackageSearch, Plus, Search, X } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AccessoryVisual } from '@/components/product/ProductVisual';
 import { Rating } from '@/components/ui/Rating';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -13,7 +13,6 @@ import { formatPrice, discountPercent, cn } from '@/lib/utils';
 import { accessories } from '@/data/accessories';
 import { accessoryCategories } from '@/data/catalog';
 import type { AccessoryCategory, AccessoryProduct } from '@/types';
-
 const SORTS = [
   { id: 'featured', label: 'Featured' },
   { id: 'price-asc', label: 'Price: low to high' },
@@ -21,9 +20,7 @@ const SORTS = [
   { id: 'rating', label: 'Top rated' },
   { id: 'newest', label: 'Newest' },
 ] as const;
-
 type SortId = (typeof SORTS)[number]['id'];
-
 /** Accessories grid with category chips, live search and sorting. */
 export function AccessoriesClient() {
   const params = useSearchParams();
@@ -33,8 +30,28 @@ export function AccessoriesClient() {
   const [query, setQuery] = useState(params.get('q') ?? '');
   const [sort, setSort] = useState<SortId>('featured');
 
+  // Loaded over HTTP so the grid reflects what the admin has published.
+  // The bundled seed is the fallback for a failed fetch, so the page still
+  // renders something useful.
+  const [items, setItems] = useState<AccessoryProduct[]>(accessories);
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/admin/catalogue?public=1')
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('catalogue'))))
+      .then((data) => {
+        if (cancelled || !Array.isArray(data?.items) || !data.items.length) return;
+        setItems(data.items);
+      })
+      .catch(() => {
+        /* keep the bundled catalogue */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const results = useMemo(() => {
-    let out = accessories;
+    let out = items;
     if (category) out = out.filter((a) => a.category === category);
     if (query.trim()) {
       const q = query.trim().toLowerCase();
@@ -64,7 +81,6 @@ export function AccessoriesClient() {
     }
     return sorted;
   }, [category, query, sort]);
-
   return (
     <div className="container">
       <div className="flex flex-col gap-3 border-b border-surface-200 pb-4 sm:flex-row sm:items-center">
@@ -92,7 +108,6 @@ export function AccessoriesClient() {
             </button>
           )}
         </div>
-
         <label className="relative sm:w-52">
           <span className="sr-only">Sort accessories</span>
           <select
@@ -108,7 +123,6 @@ export function AccessoriesClient() {
           </select>
         </label>
       </div>
-
       <div className="scroll-rail mask-fade-r flex gap-2 py-5">
         <CategoryChip active={category === null} onClick={() => setCategory(null)}>
           All
@@ -123,7 +137,6 @@ export function AccessoriesClient() {
           </CategoryChip>
         ))}
       </div>
-
       {results.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-surface-300 bg-surface-50 px-6 py-20 text-center">
           <span className="grid h-20 w-20 place-items-center rounded-3xl bg-white shadow-soft">
@@ -159,7 +172,6 @@ export function AccessoriesClient() {
     </div>
   );
 }
-
 function CategoryChip({
   active,
   onClick,
@@ -185,13 +197,12 @@ function CategoryChip({
     </button>
   );
 }
-
 function AccessoryCard({ item }: { item: AccessoryProduct }) {
   const { addAccessory } = useCart();
   const { success } = useToast();
   const off = discountPercent(item.price, item.mrp);
   return (
-    <motion.li
+    <m.li
       layout
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
@@ -252,6 +263,6 @@ function AccessoryCard({ item }: { item: AccessoryProduct }) {
           </div>
         </div>
       </a>
-    </motion.li>
+    </m.li>
   );
 }

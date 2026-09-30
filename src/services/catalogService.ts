@@ -2,6 +2,7 @@ import { products as seedProducts } from '@/data/products';
 import { accessories as seedAccessories } from '@/data/accessories';
 import { repairServices as seedRepairs } from '@/data/repairs';
 import { reviewsFor } from '@/data/reviews';
+import { overlayAccessories, overlayProducts } from '@/lib/catalogue';
 import { discountPercent } from '@/lib/utils';
 import type {
   AccessoryCategory,
@@ -13,6 +14,33 @@ import type {
   ProductSort,
   RepairService,
 } from '@/types';
+
+/**
+ * ────────────────────────────────────────────────────────────────────────────
+ *  Data-access layer
+ * ────────────────────────────────────────────────────────────────────────────
+ *  Every component reads through these services instead of importing seed
+ *  data directly, so the UI is never coupled to mock data.
+ *
+ *  The bundled catalogue is the baseline; admin edits from the admin panel are
+ *  layered on top by `@/lib/catalogue`. If that layer cannot be read, we fall
+ *  back to the bundled data, so the storefront never renders empty and a
+ *  database problem cannot take the shop down.
+ *
+ *  Authoritative logic (pricing, payment verification, stock) is deliberately
+ *  NOT reimplemented here — the server API recomputes it.
+ */
+
+/** Runs an overlay read, falling back to the bundled list on any failure. */
+function safeOverlay<T>(read: () => T[], fallback: T[]): T[] {
+  try {
+    const result = read();
+    return result.length ? result : fallback;
+  } catch (error) {
+    console.error('[catalog] overlay read failed, using bundled data:', error);
+    return fallback;
+  }
+}
 
 /**
  * ────────────────────────────────────────────────────────────────────────────
@@ -95,18 +123,19 @@ const comparators: Record<ProductSort, (a: Product, b: Product) => number> = {
 };
 
 export async function listProducts(filters: ProductFilters = {}): Promise<Paginated<Product>> {
-  const params = new URLSearchParams();
-  for (const [k, v] of Object.entries(filters)) {
-    if (v === undefined || v === null) continue;
-    params.set(k, Array.isArray(v) ? v.join(',') : String(v));
-  }
-  const live = await tryFetch<Paginated<Product>>(`/products?${params.toString()}`);
-
   const sort = filters.sort ?? 'featured';
   const page = filters.page ?? 1;
   const pageSize = filters.pageSize ?? 12;
 
-  const source = live?.items?.length ? live.items : seedProducts;
+  // Seed catalogue with any admin edits (price, stock, discount, photo) layered
+  // on top. Falls back to the bundled data if the catalogue cannot be read.
+  let source: Product[] = seedProducts;
+  try {
+    source = overlayProducts();
+  } catch (error) {
+    console.error('[catalog] overlay unavailable, using bundled data:', error);
+  }
+
   const filtered = applyFilters(source, filters);
   const sorted = [...filtered].sort(comparators[sort] ?? comparators.featured);
 
@@ -126,11 +155,25 @@ export async function listProducts(filters: ProductFilters = {}): Promise<Pagina
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   const live = await tryFetch<Product | null>(`/products/${encodeURIComponent(slug)}`);
-  return live ?? seedProducts.find((p) => p.slug === slug) ?? null;
+  if (live) return live;
+  return safeOverlay(() => overlayProducts(), seedProducts).find(
+    (p) => p.slug === slug,
+  ) ?? null;
 }
 
-export const getProductById = (id: string): Product | null =>
-  seedProducts.find((p) => p.id === id) ?? null;
+/**
+ * Resolves a product by id for the cart and order engine.
+ *
+ * Synchronous by design: it is called from `createOrder` and from the client
+ * cart resolver. The overlay is memoised per process so this stays cheap.
+ */
+let phoneCache: Product[] | null = null;
+export const getProductById = (id: string): Product | null => {
+  if (!phoneCache) {
+    phoneCache = safeOverlay(() => overlayProducts(), seedProducts);
+  }
+  return phoneCache.find((p) => p.id === id) ?? null;
+}
 
 /** Full catalogue — used by the cart resolver on the client. */
 export async function getAllProducts(): Promise<Product[]> {
@@ -195,7 +238,8 @@ export async function listAccessories(
   const page = filters.page ?? 1;
   const pageSize = filters.pageSize ?? 12;
 
-  let out = seedAccessories;
+  // Admin edits layered over the bundled accessories.
+  let out = safeOverlay(() => overlayAccessories(), seedAccessories);
   if (filters.categories?.length)
     out = out.filter((a) => filters.categories!.includes(a.category));
   if (filters.brands?.length) out = out.filter((a) => filters.brands!.includes(a.brand));
@@ -237,13 +281,24 @@ export async function listAccessories(
 }
 
 export const getAllAccessories = (): Promise<AccessoryProduct[]> =>
-  Promise.resolve(seedAccessories);
+  Promise.resolve(safeOverlay(() => overlayAccessories(), seedAccessories));
 
 export const getAccessoryBySlug = (slug: string): AccessoryProduct | null =>
-  seedAccessories.find((a) => a.slug === slug) ?? null;
+  safeOverlay(() => overlayAccessories(), seedAccessories).find((a) => a.slug === slug) ??
+  null;
 
 export const getAccessoryBrands = (): string[] =>
-  Array.from(new Set(seedAccessories.map((a) => a.brand)));
+  Array.from(new Set(safeOverlay(() => overlayAccessories(), seedAccessories).map((a) => a.brand)));
+
+/**
+ * Drops the memoised catalogue after an admin edit.
+ *
+ * Without this, a price or stock change would not appear until the process
+ * restarted, because `getProductById` caches for the cart and order engine.
+ */
+export function invalidateCatalogueCache(): void {
+  phoneCache = null;
+}
 
 /* ── Repairs ────────────────────────────────────────────────────────────── */
 

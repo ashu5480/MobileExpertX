@@ -72,23 +72,23 @@ export default function AboutPage() {
         ])}
       />
 
-      <section className="dark-section relative isolate overflow-hidden bg-ink-900 pb-16 pt-12 sm:pb-20 sm:pt-16">
+      <section className="light-section pb-16 pt-12 sm:pb-20 sm:pt-16">
         <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-          <div className="absolute inset-0 bg-aurora opacity-80" />
-          <div className="absolute inset-0 bg-grid-dark bg-grid opacity-20 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_40%,#000,transparent)]" />
+          <div className="light-aurora" />
+          <div className="light-grid" />
         </div>
         <div className="container">
           <Breadcrumbs items={[{ name: 'Home', href: '/' }, { name: 'About' }]} dark />
           <div className="mt-6 max-w-3xl">
-            <h1 className="text-display-lg font-extrabold text-white">
+            <h1 className="text-display-lg font-extrabold text-ink-900">
               We built the phone shop we wanted to walk into.
             </h1>
-            <p className="mt-5 text-base leading-relaxed text-white/60 sm:text-lg">
+            <p className="mt-5 text-base leading-relaxed text-ink-600 sm:text-lg">
               MobilExpertX started in 2019 with one workbench and a simple frustration:
               nobody would tell you the actual condition of a refurbished phone, or the
               real trade-in value, or whether a repair was worth doing.
             </p>
-            <p className="mt-4 text-base leading-relaxed text-white/60 sm:text-lg">
+            <p className="mt-4 text-base leading-relaxed text-ink-600 sm:text-lg">
               Seven years later we sell phones, buy them back, and fix them under one
               roof — and we publish the numbers before you commit to anything.
             </p>
@@ -226,7 +226,7 @@ export default function AboutPage() {
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink-800"
+                  className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
                 >
                   Message on WhatsApp
                 </a>

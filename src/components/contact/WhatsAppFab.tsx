@@ -1,11 +1,10 @@
 'use client';
 
+import { m, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { buildWhatsAppUrl, siteConfig, whatsappMessages } from '@/lib/config';
 import { usePrefersReducedMotion } from '@/components/providers/MotionProvider';
-
 /**
  * Floating WhatsApp button.
  *
@@ -23,9 +22,7 @@ export function WhatsAppFab() {
   const [expanded, setExpanded] = useState(false);
   const [hidden, setHidden] = useState(false);
   const reduced = usePrefersReducedMotion();
-
   useEffect(() => setMounted(true), []);
-
   // Reveal the label briefly on load, then collapse to the icon.
   useEffect(() => {
     if (!mounted) return;
@@ -33,7 +30,6 @@ export function WhatsAppFab() {
     const t = window.setTimeout(() => setExpanded(false), 4200);
     return () => window.clearTimeout(t);
   }, [mounted]);
-
   // Hide while scrolling down, show again on scroll up.
   useEffect(() => {
     if (!mounted) return;
@@ -49,16 +45,14 @@ export function WhatsAppFab() {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [mounted]);
-
   const href = buildWhatsAppUrl(
     siteConfig.contact.whatsapp,
     whatsappMessages.needHelp(),
   );
-
   return (
     <AnimatePresence>
       {mounted && !hidden && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.7, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.7, y: 20 }}
@@ -67,7 +61,7 @@ export function WhatsAppFab() {
         >
           <AnimatePresence mode="wait">
             {expanded ? (
-              <motion.a
+              <m.a
                 key="expanded"
                 href={href}
                 target="_blank"
@@ -86,7 +80,7 @@ export function WhatsAppFab() {
                     <span className="absolute inset-0 animate-pulse-ring rounded-full border-2 border-white/60" />
                   )}
                 </span>
-                <motion.span
+                <m.span
                   initial={{ opacity: 0, x: -6 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -6 }}
@@ -94,10 +88,10 @@ export function WhatsAppFab() {
                   className="pl-1"
                 >
                   Need Help?
-                </motion.span>
-              </motion.a>
+                </m.span>
+              </m.a>
             ) : (
-              <motion.a
+              <m.a
                 key="collapsed"
                 href={href}
                 target="_blank"
@@ -113,10 +107,10 @@ export function WhatsAppFab() {
                 {!reduced && (
                   <span className="absolute inset-0 animate-pulse-ring rounded-full border-2 border-white/50" />
                 )}
-              </motion.a>
+              </m.a>
             )}
           </AnimatePresence>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

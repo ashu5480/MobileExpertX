@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import {
   Check,
@@ -27,7 +27,6 @@ import {
 } from '@/lib/config';
 import { discountPercent, formatPrice } from '@/lib/utils';
 import type { Product } from '@/types';
-
 /**
  * Buy box — colour / storage / RAM pickers with live pricing, plus every
  * route to purchase: add to cart, buy now, WhatsApp, or a phone call.
@@ -37,18 +36,15 @@ export function ProductPurchase({ product }: { product: Product }) {
   const { addItem } = useCart();
   const { openCart } = useUI();
   const { success } = useToast();
-
   const [colorIndex, setColorIndex] = useState(0);
   const [storage, setStorage] = useState(product.storages[0]);
   const [ram, setRam] = useState(product.rams[0]);
   const [buying, setBuying] = useState(false);
-
   const color = product.colors[colorIndex];
   const variantKey = makeVariantKey({ color: color?.name, storage, ram });
   const price = variantPrice(product, variantKey);
   const off = discountPercent(price, product.mrp);
   const outOfStock = product.stock <= 0;
-
   const handleAdd = useCallback(() => {
     if (outOfStock) return;
     addItem(product, variantKey);
@@ -58,14 +54,12 @@ export function ProductPurchase({ product }: { product: Product }) {
     );
     openCart();
   }, [addItem, color?.name, openCart, outOfStock, product.name, storage, success, variantKey]);
-
   const handleBuyNow = useCallback(() => {
     if (outOfStock) return;
     setBuying(true);
     addItem(product, variantKey);
     router.push('/checkout');
   }, [addItem, outOfStock, product, router, variantKey]);
-
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2.5">
@@ -73,11 +67,9 @@ export function ProductPurchase({ product }: { product: Product }) {
         <DiscountBadge percent={off} />
         <span className="text-xs text-ink-400">SKU {product.sku}</span>
       </div>
-
       <h1 className="mt-4 text-display-sm font-extrabold tracking-tight text-ink-900">
         {product.name}
       </h1>
-
       <div className="mt-3 flex flex-wrap items-center gap-4">
         <a href="#reviews" className="flex items-center gap-2 hover:opacity-80">
           <Rating value={product.rating} size={15} showValue />
@@ -89,7 +81,6 @@ export function ProductPurchase({ product }: { product: Product }) {
           {outOfStock ? 'Out of stock' : `In stock · ${product.stock} available`}
         </span>
       </div>
-
       <div className="mt-6 flex flex-wrap items-end gap-3">
         <span className="text-4xl font-extrabold tracking-tight text-ink-900">
           {formatPrice(price)}
@@ -108,7 +99,6 @@ export function ProductPurchase({ product }: { product: Product }) {
       <p className="mt-1.5 text-sm text-ink-500">
         Inclusive of all taxes · or {formatPrice(Math.round(price / 12))}/month for 12 months
       </p>
-
       {/* Variants */}
       <div className="mt-8 space-y-6">
         <div>
@@ -132,24 +122,23 @@ export function ProductPurchase({ product }: { product: Product }) {
                     : c.hex,
                   boxShadow:
                     i === colorIndex
-                      ? '0 0 0 2px #fff, 0 0 0 4px #2563FF'
+                      ? '0 0 0 2px #fff, 0 0 0 4px #10B981'
                       : 'inset 0 0 0 1px rgba(8,9,13,0.12)',
                 }}
               >
                 {i === colorIndex && (
-                  <motion.span
+                  <m.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     className="absolute inset-0 grid place-items-center"
                   >
                     <Check className="h-4 w-4 text-white drop-shadow" aria-hidden="true" />
-                  </motion.span>
+                  </m.span>
                 )}
               </button>
             ))}
           </div>
         </div>
-
         <div>
           <h2 className="mb-2.5 text-[13px] font-semibold text-ink-800">Storage</h2>
           <div className="flex flex-wrap gap-2">
@@ -160,7 +149,6 @@ export function ProductPurchase({ product }: { product: Product }) {
             ))}
           </div>
         </div>
-
         {product.rams.length > 1 && (
           <div>
             <h2 className="mb-2.5 text-[13px] font-semibold text-ink-800">RAM</h2>
@@ -174,7 +162,6 @@ export function ProductPurchase({ product }: { product: Product }) {
           </div>
         )}
       </div>
-
       {/* Trust strip */}
       <ul className="mt-7 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
         {[
@@ -188,7 +175,6 @@ export function ProductPurchase({ product }: { product: Product }) {
           </li>
         ))}
       </ul>
-
       {/* Actions */}
       <div className="mt-7 space-y-2.5">
         <Button onClick={handleAdd} size="lg" fullWidth disabled={outOfStock}>
@@ -205,7 +191,6 @@ export function ProductPurchase({ product }: { product: Product }) {
         >
           Buy now
         </Button>
-
         <div className="grid grid-cols-2 gap-2.5 pt-1">
           <a
             href={buildWhatsAppUrl(
@@ -231,7 +216,6 @@ export function ProductPurchase({ product }: { product: Product }) {
           </a>
         </div>
       </div>
-
       {product.condition === 'refurbished' && (
         <div className="mt-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
           <h3 className="text-sm font-bold text-emerald-800">Refurbished assurance</h3>

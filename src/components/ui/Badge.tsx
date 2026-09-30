@@ -1,10 +1,12 @@
 import { cn } from '@/lib/utils';
 
-type Tone = 'brand' | 'success' | 'warning' | 'danger' | 'neutral' | 'dark' | 'cyan';
+type Tone = 'brand' | 'success' | 'warning' | 'danger' | 'neutral' | 'dark' | 'cyan' | 'green';
 
 const tones: Record<Tone, string> = {
   brand: 'bg-brand-500/10 text-brand-600 ring-brand-500/20',
-  cyan: 'bg-cyan-500/12 text-cyan-600 ring-cyan-500/25',
+  // Brand-tinted solid chip, the light-theme default for product labels.
+  green: 'bg-brand-gradient text-white ring-brand-600',
+  cyan: 'bg-brand-500/12 text-brand-600 ring-brand-500/25',
   success: 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20',
   warning: 'bg-amber-500/12 text-amber-700 ring-amber-500/25',
   danger: 'bg-rose-500/10 text-rose-600 ring-rose-500/20',

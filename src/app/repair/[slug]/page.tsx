@@ -83,7 +83,7 @@ export default async function RepairServicePage({ params }: Params) {
             <div>
               <RepairIcon
                 name={service.icon}
-                className="grid h-14 w-14 place-items-center rounded-2xl bg-white/10 text-cyan-400 ring-1 ring-white/15"
+                className="grid h-14 w-14 place-items-center rounded-2xl bg-white/10 text-brand-600 ring-1 ring-white/15"
               />
               <h1 className="mt-6 text-display-md font-extrabold text-white">{service.name}</h1>
               <p className="mt-5 max-w-xl text-base leading-relaxed text-white/65">
@@ -111,7 +111,7 @@ export default async function RepairServicePage({ params }: Params) {
 
             <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
               <h2 className="flex items-center gap-2 text-sm font-bold text-white">
-                <Check className="h-4 w-4 text-cyan-400" aria-hidden="true" />
+                <Check className="h-4 w-4 text-brand-600" aria-hidden="true" />
                 What is included
               </h2>
               <ul className="mt-4 space-y-2.5">
@@ -127,7 +127,7 @@ export default async function RepairServicePage({ params }: Params) {
               </ul>
 
               <h2 className="mt-7 flex items-center gap-2 text-sm font-bold text-white">
-                <ShieldCheck className="h-4 w-4 text-cyan-400" aria-hidden="true" />
+                <ShieldCheck className="h-4 w-4 text-brand-600" aria-hidden="true" />
                 Devices we service
               </h2>
               <ul className="mt-3 flex flex-wrap gap-1.5">
@@ -234,3 +234,14 @@ export default async function RepairServicePage({ params }: Params) {
     </>
   );
 }
+
+/**
+ * Rendered per request, not prerendered.
+ *
+ * Two reasons. The catalogue is editable from the admin panel, so a frozen
+ * build would show stale prices. And a statically generated route that
+ * renders 
+otFound() for an unknown slug answers 200 with a soft-404
+ * body, which search engines index as a real page.
+ */
+export const dynamic = 'force-dynamic';

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Package, Pencil, Trash2, Plus } from 'lucide-react';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { formatPrice } from '@/lib/utils';
-import type { Listing } from '@/lib/listings';
+import type { Listing } from '@/lib/listing-shared';
 
 /**
  * The customer's own items, one page at a time.
@@ -58,7 +58,8 @@ export function ListingList({
           List a phone or accessory you want to sell. Add photos and a clear
           description — honest listings sell faster.
         </p>
-        <ButtonLink href="/account/items/new" variant="primary" className="mt-5" icon={Plus}>
+        <ButtonLink href="/account/items/new" variant="primary" className="mt-5">
+          <Plus className="h-4 w-4" aria-hidden="true" />
           List your first item
         </ButtonLink>
       </div>
@@ -108,8 +109,8 @@ export function ListingList({
                   href={`/account/items/${item.id}/edit`}
                   variant="outline"
                   size="sm"
-                  icon={Pencil}
                 >
+                  <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                   Edit
                 </ButtonLink>
                 <Button
@@ -118,8 +119,8 @@ export function ListingList({
                   size="sm"
                   onClick={() => remove(item.id)}
                   disabled={busyId === item.id}
-                  icon={Trash2}
                 >
+                  <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                   Delete
                 </Button>
               </div>

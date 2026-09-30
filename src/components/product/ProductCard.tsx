@@ -1,7 +1,7 @@
 'use client';
 
+import { m } from 'framer-motion';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { Eye, Heart, ShoppingBag } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { ProductVisual } from './ProductVisual';
@@ -13,7 +13,6 @@ import { useToast } from '@/store/toastStore';
 import { makeVariantKey } from '@/lib/pricing';
 import { cn, discountPercent, formatPrice } from '@/lib/utils';
 import type { Product } from '@/types';
-
 /**
  * Premium product card.
  *
@@ -41,17 +40,14 @@ export function ProductCard({
   const cardRef = useRef<HTMLElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
-
   const { addItem } = useCart();
   const { registerFlySource } = useUI();
   const { has, toggle, isHydrated } = useWishlist();
   const { success, toast } = useToast();
-
   const saved = isHydrated && has(product.id);
   const off = discountPercent(product.price, product.mrp);
   const outOfStock = product.stock <= 0;
   const lowStock = product.stock > 0 && product.stock <= 5;
-
   const onPointerMove = useCallback((e: React.PointerEvent<HTMLElement>) => {
     // Coarse pointers have no hover state — tilting there is just noise.
     if (e.pointerType !== 'mouse') return;
@@ -63,20 +59,17 @@ export function ProductCard({
     el.style.setProperty('--tilt-x', `${(px * 8).toFixed(2)}deg`);
     el.style.setProperty('--tilt-y', `${(-py * 8).toFixed(2)}deg`);
   }, []);
-
   const onPointerLeave = useCallback(() => {
     setIsHovering(false);
     cardRef.current?.style.setProperty('--tilt-x', '0deg');
     cardRef.current?.style.setProperty('--tilt-y', '0deg');
   }, []);
-
   const handleAdd = useCallback(() => {
     if (outOfStock) return;
     if (imageRef.current) registerFlySource(imageRef.current, product.accent);
     addItem(product, makeVariantKey({}));
     success('Added to cart', `${product.name} is in your bag.`);
   }, [addItem, outOfStock, product, registerFlySource, success]);
-
   const handleWishlist = useCallback(() => {
     const nowSaved = toggle(product.id);
     toast({
@@ -85,9 +78,8 @@ export function ProductCard({
       tone: nowSaved ? 'success' : 'info',
     });
   }, [product.name, toast, toggle]);
-
   return (
-    <motion.article
+    <m.article
       ref={cardRef}
       onPointerMove={onPointerMove}
       onPointerEnter={() => setIsHovering(true)}
@@ -128,16 +120,14 @@ export function ProductCard({
             </div>
           </div>
         </Link>
-
         <div className="pointer-events-none absolute left-3 top-3 flex flex-col items-start gap-1.5">
           <DiscountBadge percent={off} />
           {product.tags.includes('best-seller') && !off && (
-            <span className="rounded-full bg-ink-900 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
+            <span className="rounded-full bg-brand-gradient px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white shadow-soft">
               Best seller
             </span>
           )}
         </div>
-
         <button
           type="button"
           onClick={handleWishlist}
@@ -153,22 +143,20 @@ export function ProductCard({
         >
           <Heart className={cn('h-4 w-4 transition-transform', saved && 'scale-110 fill-current')} />
         </button>
-
         {outOfStock && (
           <div className="absolute inset-0 grid place-items-center bg-white/70 backdrop-blur-[2px]">
-            <span className="rounded-full bg-ink-900 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white">
+            <span className="rounded-full bg-ink-800 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white">
               Out of stock
             </span>
           </div>
         )}
-
         {onQuickView && (
           <button
             type="button"
             onClick={() => onQuickView(product)}
             className={cn(
-              'absolute bottom-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-ink-900/90 px-3.5 py-2 text-xs font-semibold text-white backdrop-blur-md transition-all duration-300',
-              'hover:bg-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60',
+              'absolute bottom-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-brand-gradient px-3.5 py-2 text-xs font-semibold text-white shadow-lift backdrop-blur-md transition-all duration-300',
+              'hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/60 focus-visible:ring-offset-2',
               isHovering ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0',
               'hidden md:inline-flex',
             )}
@@ -178,7 +166,6 @@ export function ProductCard({
           </button>
         )}
       </div>
-
       {/* ── Body ──────────────────────────────────────────────────────── */}
       <div className="flex flex-1 flex-col p-4 sm:p-5">
         <div className="flex items-center justify-between gap-2">
@@ -187,7 +174,6 @@ export function ProductCard({
             <span className="text-[11px] font-semibold text-amber-600">Only {product.stock} left</span>
           )}
         </div>
-
         <h3 className="mt-2.5 line-clamp-2 text-[15px] font-bold leading-snug tracking-tight text-ink-900">
           <Link
             href={`/shop/${product.slug}`}
@@ -196,14 +182,12 @@ export function ProductCard({
             {product.name}
           </Link>
         </h3>
-
         <div className="mt-1.5 flex items-center gap-2">
           <Rating value={product.rating} size={12} />
           <span className="truncate text-xs text-ink-400">
             {product.storages[0]} · {product.rams[0]}
           </span>
         </div>
-
         {/* Spacer keeps the price row aligned across a grid of varying titles */}
         <div className="mt-auto pt-3.5">
           <div className="flex items-end justify-between gap-2">
@@ -224,7 +208,6 @@ export function ProductCard({
                   : 'Inclusive of all taxes'}
               </p>
             </div>
-
             <button
               type="button"
               onClick={handleAdd}
@@ -243,6 +226,6 @@ export function ProductCard({
           </div>
         </div>
       </div>
-    </motion.article>
+    </m.article>
   );
 }

@@ -45,10 +45,10 @@ export default async function RepairPage() {
       />
 
       {/* ── Hero ──────────────────────────────────────────────────────── */}
-      <section className="dark-section relative isolate overflow-hidden bg-ink-900 pb-16 pt-12 sm:pb-20 sm:pt-16">
+      <section className="light-section pb-16 pt-12 sm:pb-20 sm:pt-16">
         <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-          <div className="absolute inset-0 bg-aurora opacity-80" />
-          <div className="absolute inset-0 bg-grid-dark bg-grid opacity-20 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_40%,#000,transparent)]" />
+          <div className="light-aurora" />
+          <div className="light-grid" />
         </div>
 
         <div className="container">
@@ -56,10 +56,10 @@ export default async function RepairPage() {
 
           <div className="grid items-center gap-10 lg:grid-cols-2">
             <div>
-              <h1 className="text-display-lg font-extrabold text-white">
+              <h1 className="text-display-lg font-extrabold text-ink-900">
                 Repairs by people who do this every day.
               </h1>
-              <p className="mt-5 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg">
+              <p className="mt-5 max-w-xl text-base leading-relaxed text-ink-600 sm:text-lg">
                 Component-level work under a microscope, an upfront quote before we
                 touch anything, and a written warranty on every repair we carry out.
               </p>
@@ -72,11 +72,11 @@ export default async function RepairPage() {
                 ].map((item) => (
                   <li
                     key={item.label}
-                    className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-md"
+                    className="rounded-2xl border border-surface-200 bg-white/85 p-4 shadow-soft backdrop-blur-md"
                   >
-                    <item.icon className="h-5 w-5 text-cyan-400" aria-hidden="true" />
-                    <p className="mt-2.5 text-sm font-bold text-white">{item.label}</p>
-                    <p className="mt-0.5 text-xs text-white/50">{item.detail}</p>
+                    <item.icon className="h-5 w-5 text-brand-600" aria-hidden="true" />
+                    <p className="mt-2.5 text-sm font-bold text-ink-900">{item.label}</p>
+                    <p className="mt-0.5 text-xs text-ink-500">{item.detail}</p>
                   </li>
                 ))}
               </ul>
@@ -110,7 +110,7 @@ export default async function RepairPage() {
                       className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-500/10 text-brand-500 transition-transform duration-500 group-hover:scale-110"
                     />
                     {service.popular && (
-                      <span className="rounded-full bg-ink-900 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+                      <span className="rounded-full bg-brand-gradient px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
                         Popular
                       </span>
                     )}

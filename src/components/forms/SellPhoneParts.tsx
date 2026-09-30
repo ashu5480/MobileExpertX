@@ -1,6 +1,7 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
+
 import { Check, ChevronLeft, ChevronRight, IndianRupee, Sparkles } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 import { Button, ButtonLink } from '@/components/ui/Button';
@@ -20,7 +21,6 @@ export const STEPS = [
   { id: 7, title: 'You', hint: 'Contact details' },
   { id: 8, title: 'Pickup', hint: 'When and where' },
 ] as const;
-
 export interface WizardState {
   brand: string;
   model: string;
@@ -33,7 +33,6 @@ export interface WizardState {
   hasOriginalBox: boolean;
   purchaseAge: string;
 }
-
 export const initialWizardState: WizardState = {
   brand: '',
   model: '',
@@ -46,7 +45,6 @@ export const initialWizardState: WizardState = {
   hasOriginalBox: false,
   purchaseAge: '',
 };
-
 /** Progress rail shown at the top of every step. */
 export function WizardProgress({ step }: { step: number }) {
   const pct = ((step - 1) / (STEPS.length - 1)) * 100;
@@ -66,7 +64,7 @@ export function WizardProgress({ step }: { step: number }) {
         aria-valuemax={STEPS.length}
         aria-label={`Step ${step} of ${STEPS.length}: ${STEPS[step - 1]?.title}`}
       >
-        <motion.div
+        <m.div
           className="h-full rounded-full bg-brand-gradient"
           initial={false}
           animate={{ width: `${pct}%` }}
@@ -76,7 +74,6 @@ export function WizardProgress({ step }: { step: number }) {
     </div>
   );
 }
-
 /** Cross-fade wrapper that animates each step in and out. */
 export function StepPanel({
   stepKey,
@@ -88,7 +85,7 @@ export function StepPanel({
   const reduced = usePrefersReducedMotion();
   return (
     <AnimatePresence mode="wait">
-      <motion.div
+      <m.div
         key={stepKey}
         initial={reduced ? { opacity: 0 } : { opacity: 0, x: 28 }}
         animate={reduced ? { opacity: 1 } : { opacity: 1, x: 0 }}
@@ -96,11 +93,10 @@ export function StepPanel({
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
       >
         {children}
-      </motion.div>
+      </m.div>
     </AnimatePresence>
   );
 }
-
 /** Wizard footer with Back / Next. `nextLabel` changes on the final step. */
 export function WizardNav({
   step,
@@ -134,7 +130,6 @@ export function WizardNav({
     </div>
   );
 }
-
 /** Small helper for the "value" callout used on the estimate step. */
 export function ValueCallout({
   label,
@@ -169,5 +164,4 @@ export function ValueCallout({
     </div>
   );
 }
-
 export { sellBrands, sellStorages };

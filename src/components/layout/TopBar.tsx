@@ -18,13 +18,13 @@ const ITEMS = [
  */
 export function TopBar() {
   return (
-    <div className="dark-section relative z-50 overflow-hidden bg-ink-900 text-white">
+    <div className="relative z-50 overflow-hidden border-b border-brand-200 bg-brand-50 text-brand-900">
       <div className="container">
         {/* Mobile: a swipeable single row */}
         <div className="flex items-center gap-6 overflow-x-auto py-2.5 text-[12px] font-medium whitespace-nowrap [scrollbar-width:none] sm:hidden [&::-webkit-scrollbar]:hidden">
           {ITEMS.map((item) => (
-            <span key={item.text} className="inline-flex items-center gap-1.5 text-white/75">
-              <item.icon className="h-3.5 w-3.5 shrink-0 text-cyan-400" aria-hidden="true" />
+            <span key={item.text} className="inline-flex items-center gap-1.5 text-brand-800">
+              <item.icon className="h-3.5 w-3.5 shrink-0 text-brand-600" aria-hidden="true" />
               {item.text}
             </span>
           ))}
@@ -36,9 +36,9 @@ export function TopBar() {
             {ITEMS.map((item) => (
               <span
                 key={item.text}
-                className="mx-8 inline-flex items-center gap-2 text-[13px] font-medium text-white/75"
+                className="mx-8 inline-flex items-center gap-2 text-[13px] font-medium text-brand-800"
               >
-                <item.icon className="h-4 w-4 text-cyan-400" aria-hidden="true" />
+                <item.icon className="h-4 w-4 text-brand-600" aria-hidden="true" />
                 {item.text}
               </span>
             ))}

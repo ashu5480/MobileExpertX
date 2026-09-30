@@ -49,7 +49,8 @@ export default async function MyItemsPage({
               Everything you have listed. Edit or remove any of it at any time.
             </p>
           </div>
-          <ButtonLink href="/account/items/new" variant="primary" icon={Plus}>
+          <ButtonLink href="/account/items/new" variant="primary">
+            <Plus className="h-4 w-4" aria-hidden="true" />
             List an item
           </ButtonLink>
         </div>

@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { AuthForm } from '@/components/auth/AuthForm';
-import { currentUser } from '@/lib/auth';
+import { ensureAdminUser, currentUser } from '@/lib/auth';
 import { buildMetadata } from '@/lib/seo';
 import { siteConfig } from '@/lib/config';
 
@@ -16,10 +16,18 @@ export const metadata: Metadata = buildMetadata({
 /**
  * `/login` -- one page for both signing in and creating an account.
  *
+ * Seeds the admin account on first visit, so a brand-new install can sign in
+ * as admin immediately rather than waiting for a customer to register.
  * Already-signed-in users are redirected, so the form is never shown to
  * someone who does not need it.
  */
 export default function LoginPage() {
+  try {
+    ensureAdminUser();
+  } catch (error) {
+    console.error('[auth] admin bootstrap failed:', error);
+  }
+
   const user = currentUser();
   if (user) redirect(user.role === 'admin' ? '/admin' : '/account');
 

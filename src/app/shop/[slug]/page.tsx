@@ -179,3 +179,22 @@ export default async function ProductPage({ params }: Params) {
     </>
   );
 }
+
+/**
+ * Catalogue-backed route: the admin panel can change prices, stock, photos
+ * and discounts at any time, so this is incremental-static. Admin saves call
+ * `revalidatePath` so changes appear immediately; this interval is the net for
+ * anything that slips through.
+ */
+
+
+/**
+ * Rendered per request, not prerendered.
+ *
+ * Two reasons. The catalogue is editable from the admin panel, so a frozen
+ * build would show stale prices. And a statically generated route that
+ * renders 
+otFound() for an unknown slug answers 200 with a soft-404
+ * body, which search engines index as a real page.
+ */
+export const dynamic = 'force-dynamic';

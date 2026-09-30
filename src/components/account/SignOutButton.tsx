@@ -25,9 +25,9 @@ export function SignOutButton({ className }: { className?: string }) {
         }
       }}
       loading={busy}
-      icon={LogOut}
       className={className}
     >
+      <LogOut className="h-4 w-4" aria-hidden="true" />
       Sign out
     </Button>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { MessageCircle, ShoppingBag } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useCart } from '@/store/cartStore';
@@ -9,7 +9,6 @@ import { makeVariantKey } from '@/lib/pricing';
 import { buildWhatsAppUrl, siteConfig, whatsappMessages } from '@/lib/config';
 import { formatPrice } from '@/lib/utils';
 import type { Product } from '@/types';
-
 /**
  * Mobile sticky action bar.
  *
@@ -22,7 +21,6 @@ export function ProductDetailStickyBar({ product }: { product: Product }) {
   const { addItem } = useCart();
   const { success } = useToast();
   const [visible, setVisible] = useState(false);
-
   useEffect(() => {
     const onScroll = () => {
       // Show the bar once the visitor is ~70% down the page.
@@ -31,11 +29,10 @@ export function ProductDetailStickyBar({ product }: { product: Product }) {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
   return (
     <AnimatePresence>
       {visible && (
-        <motion.div
+        <m.div
           initial={{ y: 90, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 90, opacity: 0 }}
@@ -49,7 +46,6 @@ export function ProductDetailStickyBar({ product }: { product: Product }) {
                 {formatPrice(product.price)}
               </p>
             </div>
-
             <a
               href={buildWhatsAppUrl(
                 siteConfig.contact.whatsapp,
@@ -62,7 +58,6 @@ export function ProductDetailStickyBar({ product }: { product: Product }) {
             >
               <MessageCircle className="h-5 w-5" aria-hidden="true" />
             </a>
-
             <button
               type="button"
               disabled={product.stock <= 0}
@@ -76,7 +71,7 @@ export function ProductDetailStickyBar({ product }: { product: Product }) {
               Add to cart
             </button>
           </div>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

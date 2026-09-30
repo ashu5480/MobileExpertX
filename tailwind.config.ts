@@ -16,35 +16,41 @@ const config: Config = {
     extend: {
       colors: {
         ink: {
-          DEFAULT: '#08090D',
-          900: '#08090D',
-          800: '#0B1020',
-          700: '#12172B',
-          600: '#1B2138',
+          DEFAULT: '#0B1220',
+          900: '#0B1220',
+          800: '#16203A',
+          700: '#1F2B4A',
+          600: '#33415C',
+          500: '#52627F',
         },
+        // Fresh green. 500 is the accent, 600 carries white button text, and
+        // 700/800 are the text-safe steps on a white background.
         brand: {
-          blue: '#2563FF',
-          cyan: '#00D9FF',
-          purple: '#7C3AED',
-          50: '#EEF3FF',
-          100: '#DCE5FF',
-          200: '#B9CBFF',
-          300: '#8FA9FF',
-          400: '#5B82FF',
-          500: '#2563FF',
-          600: '#1D4FE0',
-          700: '#183CB0',
-          800: '#143089',
+          green: '#10B981',
+          teal: '#0D9488',
+          lime: '#84CC16',
+          50: '#ECFDF5',
+          100: '#D1FAE5',
+          200: '#A7F3D0',
+          300: '#6EE7B7',
+          400: '#34D399',
+          500: '#10B981',
+          600: '#059669',
+          700: '#047857',
+          800: '#065F46',
+          900: '#064E3B',
         },
         accent: {
-          cyan: '#00D9FF',
-          purple: '#7C3AED',
+          green: '#10B981',
+          teal: '#0D9488',
+          lime: '#84CC16',
+          mint: '#5EEAD4',
         },
         surface: {
-          50: '#F7F8FC',
-          100: '#F1F3F9',
-          200: '#E6E9F2',
-          300: '#D6DAE8',
+          50: '#F5FBF8',
+          100: '#ECF7F2',
+          200: '#DDEFE7',
+          300: '#C6E3D6',
         },
       },
       fontFamily: {
@@ -62,21 +68,22 @@ const config: Config = {
         '5xl': '2.5rem',
       },
       boxShadow: {
-        soft: '0 1px 2px rgba(8,9,13,0.04), 0 8px 24px -8px rgba(8,9,13,0.08)',
-        card: '0 2px 8px rgba(8,9,13,0.05), 0 18px 40px -18px rgba(11,16,32,0.18)',
-        lift: '0 10px 24px -8px rgba(8,9,13,0.12), 0 32px 64px -28px rgba(37,99,255,0.35)',
-        glow: '0 0 0 1px rgba(37,99,255,0.18), 0 18px 48px -12px rgba(37,99,255,0.45)',
+        soft: '0 1px 2px rgba(11,18,32,0.04), 0 8px 24px -8px rgba(6,95,70,0.10)',
+        card: '0 2px 8px rgba(11,18,32,0.05), 0 18px 40px -18px rgba(6,95,70,0.20)',
+        lift: '0 10px 24px -8px rgba(11,18,32,0.12), 0 32px 64px -28px rgba(5,150,105,0.38)',
+        glow: '0 0 0 1px rgba(16,185,129,0.22), 0 18px 48px -12px rgba(5,150,105,0.45)',
         inset: 'inset 0 1px 0 0 rgba(255,255,255,0.6)',
       },
       backgroundImage: {
-        'brand-gradient': 'linear-gradient(135deg, #2563FF, #7C3AED)',
-        'brand-gradient-r': 'linear-gradient(90deg, #2563FF, #7C3AED)',
-        'aurora':
-          'radial-gradient(60% 60% at 50% 0%, rgba(37,99,255,0.18) 0%, transparent 70%), radial-gradient(50% 50% at 85% 20%, rgba(124,58,237,0.16) 0%, transparent 70%), radial-gradient(45% 45% at 15% 35%, rgba(0,217,255,0.14) 0%, transparent 70%)',
+        'brand-gradient': 'linear-gradient(135deg, #10B981, #047857)',
+        'brand-gradient-r': 'linear-gradient(90deg, #10B981, #047857)',
+        // Soft green/teal wash used behind the light sections.
+        aurora:
+          'radial-gradient(58% 58% at 50% 0%, rgba(16,185,129,0.14) 0%, transparent 70%), radial-gradient(50% 50% at 85% 22%, rgba(13,148,136,0.12) 0%, transparent 70%), radial-gradient(45% 45% at 15% 38%, rgba(132,204,22,0.10) 0%, transparent 70%)',
         'grid-dark':
           'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)',
         'grid-light':
-          'linear-gradient(rgba(11,16,32,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(11,16,32,0.045) 1px, transparent 1px)',
+          'linear-gradient(rgba(6,95,70,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(6,95,70,0.06) 1px, transparent 1px)',
       },
       backgroundSize: {
         grid: '44px 44px',
@@ -113,6 +120,13 @@ const config: Config = {
           '0%, 100%': { backgroundPosition: '0% 50%' },
           '50%': { backgroundPosition: '100% 50%' },
         },
+        // Slow drift for the light-section colour wash. Two stops, so the
+        // browser interpolates a handful of gradients rather than re-painting
+        // dozens every frame.
+        'aurora-drift': {
+          '0%': { transform: 'translate3d(-1.5%, -1%, 0) scale(1.04)' },
+          '100%': { transform: 'translate3d(1.5%, 1.5%, 0) scale(1.09)' },
+        },
       },
       animation: {
         'fade-up': 'fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both',
@@ -122,6 +136,7 @@ const config: Config = {
         marquee: 'marquee 32s linear infinite',
         'spin-slow': 'spin-slow 18s linear infinite',
         'gradient-x': 'gradient-x 6s ease infinite',
+        'aurora-drift': 'aurora-drift 22s cubic-bezier(0.22, 1, 0.36, 1) infinite alternate',
       },
     },
   },

@@ -1,7 +1,6 @@
-'use client';
-
 import Link from 'next/link';
-import { ArrowLeft, Compass, Home, Search } from 'lucide-react';
+import { Compass, Home, Search } from 'lucide-react';
+import { BackButton } from '@/components/ui/BackButton';
 import { ButtonLink } from '@/components/ui/Button';
 import { siteConfig } from '@/lib/config';
 
@@ -14,7 +13,16 @@ const SUGGESTIONS = [
   { label: 'Contact us', href: '/contact' },
 ];
 
-/** 404 page — helpful, on-brand, and never a dead end. */
+/**
+ * 404 page — helpful, on-brand, and never a dead end.
+ *
+ * Deliberately a server component. Marking the root `not-found.tsx` as
+ * `'use client'` makes Next.js answer 200 with the 404 body instead of a real
+ * 404 status, which search engines then index as a genuine page.
+ *
+ * The buttons below are client components, which a server component may
+ * render, so nothing is lost.
+ */
 export default function NotFound() {
   return (
     <div className="container py-20 sm:py-28">
@@ -72,14 +80,7 @@ export default function NotFound() {
         </p>
 
         <div className="mt-6 flex justify-center">
-          <button
-            type="button"
-            onClick={() => window.history.back()}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-ink-500 transition-colors hover:bg-surface-100 hover:text-ink-800"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-            Go back
-          </button>
+          <BackButton />
         </div>
       </div>
     </div>

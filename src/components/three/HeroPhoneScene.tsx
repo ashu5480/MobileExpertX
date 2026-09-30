@@ -28,7 +28,7 @@ interface PhoneSceneProps {
 }
 
 /** Slowly rotating phone with a glass back and a gently pulsing screen. */
-function PhoneMesh({ color = '#1B2233', accent = '#2563FF' }: PhoneSceneProps) {
+function PhoneMesh({ color = '#1B2233', accent = '#10B981' }: PhoneSceneProps) {
   const group = useRef<THREE.Group>(null);
   const screen = useRef<THREE.Mesh>(null);
   const reduced = usePrefersReducedMotion();
@@ -160,9 +160,9 @@ export default function HeroPhoneScene({ color, accent }: PhoneSceneProps) {
     >
       <ambientLight intensity={0.6} />
       <directionalLight position={[4, 6, 5]} intensity={1.5} color="#FFFFFF" />
-      <pointLight position={[-4, -2, 3]} intensity={22} color="#2563FF" distance={16} />
-      <pointLight position={[3, 2, -3]} intensity={16} color="#7C3AED" distance={14} />
-      <pointLight position={[0, -4, 2]} intensity={10} color="#00D9FF" distance={12} />
+      <pointLight position={[-4, -2, 3]} intensity={22} color="#10B981" distance={16} />
+      <pointLight position={[3, 2, -3]} intensity={16} color="#0D9488" distance={14} />
+      <pointLight position={[0, -4, 2]} intensity={10} color="#6EE7B3" distance={12} />
 
       <Float
         speed={reduced ? 0 : 1.4}

@@ -9,9 +9,9 @@
 @layer base {
   :root {
     --header-h: 72px;
-    --brand-blue: #2563ff;
-    --brand-cyan: #00d9ff;
-    --brand-purple: #7c3aed;
+    --brand-green: #10b981;
+    --brand-teal: #0d9488;
+    --brand-lime: #84cc16;
     --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
   }
 
@@ -59,6 +59,11 @@
   }
   .dark-section :focus-visible {
     @apply ring-white/70 ring-offset-ink-900;
+  }
+  /* Sections that have moved to the light palette need a ring that matches. */
+  .light-section :focus-visible,
+  .light-section-tint :focus-visible {
+    @apply ring-brand-500/70 ring-offset-white;
   }
 
   /* Honour the OS "reduce motion" setting globally. */
@@ -133,6 +138,59 @@
     @apply rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl;
   }
 
+  /* ──────────────────────────────────────────────────────────────────────────
+   *  Light feature sections
+   *  The storefront reads light: instead of near-black bands between sections,
+   *  these use a soft brand-tinted wash with a fine grid and floating colour
+   *  blobs, so the page stays airy while still having depth.
+   *  ────────────────────────────────────────────────────────────────────────── */
+
+  /* The base surface for a light section. */
+  .light-section {
+    @apply relative isolate overflow-hidden bg-white;
+    color: theme('colors.ink.900');
+  }
+
+  /* A slightly tinted variant, used where sections sit next to each other. */
+  .light-section-tint {
+    @apply light-section bg-surface-50;
+  }
+
+  /* Soft, slowly-drifting green/teal colour wash. Purely decorative. */
+  .light-aurora {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(46% 40% at 12% 6%, rgba(16, 185, 129, 0.16), transparent 70%),
+      radial-gradient(42% 38% at 88% 12%, rgba(13, 148, 136, 0.14), transparent 70%),
+      radial-gradient(50% 44% at 50% 100%, rgba(132, 204, 22, 0.11), transparent 72%);
+    animation: aurora-drift 22s var(--ease-premium) infinite alternate;
+  }
+
+  /* Fine grid, faded out towards the edges so it never competes with text. */
+  .light-grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(6, 95, 70, 0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(6, 95, 70, 0.055) 1px, transparent 1px);
+    background-size: 44px 44px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000, transparent);
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000, transparent);
+  }
+
+  /* Glass card for use on top of the light sections. */
+  .glass-light-card {
+    @apply rounded-3xl border border-white/80 bg-white/75 shadow-card backdrop-blur-xl;
+  }
+
+  /* Frosted chip, used for eyebrows and small labels. */
+  .light-chip {
+    @apply inline-flex items-center gap-2 rounded-full border border-brand-200/70 bg-brand-50/80 px-3 py-1 text-xs font-semibold text-brand-700;
+  }
+
   /* Hairline gradient border revealed on hover */
   .ring-gradient {
     position: relative;
@@ -145,8 +203,8 @@
     padding: 1px;
     background: linear-gradient(
       135deg,
-      rgba(37, 99, 255, 0.5),
-      rgba(124, 58, 237, 0.25),
+      rgba(16, 185, 129, 0.55),
+      rgba(13, 148, 136, 0.28),
       transparent 65%
     );
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);

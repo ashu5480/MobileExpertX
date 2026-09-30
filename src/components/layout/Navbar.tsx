@@ -1,8 +1,8 @@
 'use client';
 
+import { m, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'framer-motion';
 import { Heart, Menu, Phone, Search, ShoppingBag, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Logo } from '@/components/ui/Logo';
@@ -11,7 +11,6 @@ import { cn } from '@/lib/utils';
 import { useCart, useUI } from '@/store/cartStore';
 import { useWishlist } from '@/store/wishlistStore';
 import { AddToCartFly } from './AddToCartFly';
-
 export const NAV_LINKS = [
   { label: 'Home', href: '/' },
   { label: 'Shop', href: '/shop' },
@@ -21,7 +20,6 @@ export const NAV_LINKS = [
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ] as const;
-
 /**
  * Sticky premium navbar.
  *
@@ -36,21 +34,16 @@ export function Navbar() {
   const pathname = usePathname();
   const { scrollY, scrollYProgress } = useScroll();
   const [scrolled, setScrolled] = useState(false);
-
   const { count } = useCart();
   const { count: wishlistCount, isHydrated: wishlistReady } = useWishlist();
   const { openCart, setMenuOpen, setSearchOpen, setCartAnchor } = useUI();
   const cartIconRef = useRef<HTMLButtonElement>(null);
-
   useMotionValueEvent(scrollY, 'change', (latest) => setScrolled(latest > 24));
-
   useEffect(() => {
     setCartAnchor(cartIconRef.current);
   }, [setCartAnchor]);
-
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href);
-
   return (
     <>
       <header
@@ -63,7 +56,6 @@ export function Navbar() {
       >
         <nav className="container flex h-[68px] items-center gap-3 lg:h-[72px]" aria-label="Main">
           <Logo className="shrink-0" />
-
           {/* ── Desktop links ─────────────────────────────────────────── */}
           <ul className="ml-4 hidden items-center gap-0.5 lg:flex xl:ml-8">
             {NAV_LINKS.map((link) => {
@@ -80,7 +72,7 @@ export function Navbar() {
                   >
                     {link.label}
                     {active && (
-                      <motion.span
+                      <m.span
                         layoutId="nav-active-pill"
                         className="absolute inset-0 -z-10 rounded-lg bg-brand-500/10"
                         transition={{ type: 'spring', stiffness: 380, damping: 32 }}
@@ -91,7 +83,6 @@ export function Navbar() {
               );
             })}
           </ul>
-
           {/* ── Right actions ─────────────────────────────────────────── */}
           <div className="ml-auto flex items-center gap-1 sm:gap-1.5">
             <button
@@ -114,7 +105,6 @@ export function Navbar() {
             >
               <Search className="h-5 w-5" aria-hidden="true" />
             </button>
-
             <Link
               href="/wishlist"
               aria-label={`Wishlist, ${wishlistReady ? `${wishlistCount} items` : 'loading'}`}
@@ -127,7 +117,6 @@ export function Navbar() {
                 </span>
               )}
             </Link>
-
             <Link
               href="/account"
               aria-label="Your account"
@@ -135,7 +124,6 @@ export function Navbar() {
             >
               <User className="h-5 w-5" aria-hidden="true" />
             </Link>
-
             <a
               href={`tel:${siteConfig.contact.phoneDialable}`}
               aria-label={`Call ${siteConfig.contact.phoneDisplay}`}
@@ -143,7 +131,6 @@ export function Navbar() {
             >
               <Phone className="h-5 w-5" aria-hidden="true" />
             </a>
-
             <button
               ref={cartIconRef}
               type="button"
@@ -154,7 +141,6 @@ export function Navbar() {
               <ShoppingBag className="h-5 w-5" aria-hidden="true" />
               <AnimateBadge value={count} />
             </button>
-
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
@@ -165,25 +151,22 @@ export function Navbar() {
             </button>
           </div>
         </nav>
-
-        <motion.div
+        <m.div
           className="h-[2px] origin-left bg-brand-gradient"
           style={{ scaleX: scrollYProgress }}
           aria-hidden="true"
         />
       </header>
-
       <AddToCartFly />
     </>
   );
 }
-
 /** Animated count badge on the cart icon. */
 function AnimateBadge({ value }: { value: number }) {
   return (
     <AnimatePresence>
       {value > 0 && (
-        <motion.span
+        <m.span
           key={value}
           initial={{ scale: 0.4, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -192,7 +175,7 @@ function AnimateBadge({ value }: { value: number }) {
           className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-gradient px-1 text-[10px] font-bold text-white ring-2 ring-white"
         >
           {value > 99 ? '99+' : value}
-        </motion.span>
+        </m.span>
       )}
     </AnimatePresence>
   );

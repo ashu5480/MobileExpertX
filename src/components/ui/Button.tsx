@@ -1,11 +1,10 @@
 'use client';
 
+import { m, type HTMLMotionProps } from 'framer-motion';
 import { forwardRef } from 'react';
 import Link from 'next/link';
-import { motion, type HTMLMotionProps } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
 /**
  * The single Button primitive for the whole app.
  *
@@ -13,13 +12,10 @@ import { cn } from '@/lib/utils';
  * - `loading` swaps the leading icon for a spinner and sets aria-busy.
  * - A gradient sheen sweeps across on hover for the primary variant.
  */
-
 type Variant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'whatsapp' | 'dark';
 type Size = 'sm' | 'md' | 'lg' | 'icon';
-
 const base =
   'relative inline-flex select-none items-center justify-center gap-2 overflow-hidden rounded-xl font-semibold transition-all duration-300 ease-premium disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] whitespace-nowrap';
-
 const variants: Record<Variant, string> = {
   primary: cn(
     base,
@@ -28,29 +24,28 @@ const variants: Record<Variant, string> = {
   ),
   secondary: cn(
     base,
-    'bg-ink-900 text-white shadow-lift',
-    'hover:bg-ink-800 hover:shadow-glow',
+    'border border-brand-200 bg-brand-50 text-brand-800',
+    'hover:border-brand-300 hover:bg-brand-100',
   ),
   outline: cn(
     base,
     'border border-surface-300 bg-white text-ink-900 shadow-soft',
-    'hover:border-brand-300 hover:bg-surface-50 hover:text-brand-600',
+    'hover:border-brand-300 hover:bg-surface-50 hover:text-brand-700',
   ),
   ghost: cn(base, 'text-ink-700 hover:bg-surface-100 hover:text-ink-900'),
   whatsapp: cn(base, 'bg-[#25D366] text-white shadow-lift hover:brightness-105 hover:shadow-[0_18px_48px_-12px_rgba(37,211,102,0.55)]'),
+  // Reserved for the few surfaces that are still dark (device mockups, the
+  // cart drawer backdrop). Everywhere else prefer `secondary` or `outline`.
   dark: cn(base, 'bg-white/10 text-white backdrop-blur-md ring-1 ring-inset ring-white/20 hover:bg-white/20'),
 };
-
 const sizes: Record<Size, string> = {
   sm: 'h-9 px-3.5 text-[13px]',
   md: 'h-11 px-5 text-sm',
   lg: 'h-13 px-7 text-[15px]',
   icon: 'h-10 w-10 p-0',
 };
-
 const sheen =
   'pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 ease-premium group-hover:translate-x-full';
-
 export interface ButtonProps {
   variant?: Variant;
   size?: Size;
@@ -60,17 +55,14 @@ export interface ButtonProps {
   className?: string;
   children?: React.ReactNode;
 }
-
 type NativeProps = Omit<HTMLMotionProps<'button'>, 'children' | 'className'>;
 type LinkProps = Omit<
   React.ComponentProps<typeof Link>,
   'children' | 'className' | 'onDrag' | 'onDragStart' | 'onDragEnd' | 'onAnimationStart' | 'style'
 >;
-
 export type ButtonComponent =
   | ((props: NativeProps & ButtonProps) => JSX.Element)
   | ((props: LinkProps & ButtonProps) => JSX.Element);
-
 function Inner({
   children,
   loading,
@@ -91,7 +83,6 @@ function Inner({
     </>
   );
 }
-
 export const Button = forwardRef<HTMLButtonElement, NativeProps & ButtonProps>(
   function Button(
     {
@@ -108,7 +99,7 @@ export const Button = forwardRef<HTMLButtonElement, NativeProps & ButtonProps>(
     ref,
   ) {
     return (
-      <motion.button
+      <m.button
         ref={ref}
         type="button"
         disabled={disabled || loading}
@@ -128,11 +119,10 @@ export const Button = forwardRef<HTMLButtonElement, NativeProps & ButtonProps>(
         <Inner variant={variant} size={size} loading={loading} loadingText={loadingText}>
           {children}
         </Inner>
-      </motion.button>
+      </m.button>
     );
   },
 );
-
 export function ButtonLink({
   variant = 'primary',
   size = 'md',

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ImagePlus, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Field } from '@/components/ui/Field';
-import { LISTING_CATEGORIES, LISTING_CONDITIONS, type Listing } from '@/lib/listings';
+import { LISTING_CATEGORIES, LISTING_CONDITIONS, type Listing } from '@/lib/listing-shared';
 
 /**
  * Create / edit form for a customer listing.
@@ -93,6 +93,25 @@ export function ListingForm({ listing }: { listing?: Listing }) {
             photos: keptPaths,
           }),
 
+
+        });
+      }
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error ?? 'Could not save your item.');
+        return;
+      }
+
+      router.push('/account/items');
+      router.refresh();
+    } catch {
+      setError('Upload failed. Please try again.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <form
       onSubmit={onSubmit}
@@ -178,7 +197,7 @@ export function ListingForm({ listing }: { listing?: Listing }) {
           rows={5}
           maxLength={4000}
           className={inputClass}
-          placeholder="Screen is perfect, no scratches on the back. Battery health 89%. Comes with the original box and cable."
+          placeholder="Screen is perfect, no scratches on the back. Battery health 89%. Comes with the original box."
           required
         />
       </Field>
@@ -241,20 +260,3 @@ export function ListingForm({ listing }: { listing?: Listing }) {
   );
 }
 
-        });
-      }
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setError(data.error ?? 'Could not save your item.');
-        return;
-      }
-
-      router.push('/account/items');
-      router.refresh();
-    } catch {
-      setError('Upload failed. Please try again.');
-    } finally {
-      setBusy(false);
-    }
-  }

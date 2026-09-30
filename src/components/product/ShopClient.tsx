@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ChevronDown, LayoutGrid, PackageSearch, Search, SlidersHorizontal, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
@@ -16,7 +16,6 @@ import {
 } from '@/components/product/FilterSidebar';
 import { priceRanges } from '@/data/catalog';
 import type { Product, ProductCategory, ProductCondition, ProductSort } from '@/types';
-
 const SORTS: Array<{ id: ProductSort; label: string }> = [
   { id: 'featured', label: 'Featured' },
   { id: 'price-asc', label: 'Price: low to high' },
@@ -25,9 +24,7 @@ const SORTS: Array<{ id: ProductSort; label: string }> = [
   { id: 'rating', label: 'Top rated' },
   { id: 'discount', label: 'Biggest discount' },
 ];
-
 const PAGE_SIZE = 12;
-
 export interface ShopProductsPayload {
   items: Product[];
   total: number;
@@ -35,7 +32,6 @@ export interface ShopProductsPayload {
   totalPages: number;
   hasMore: boolean;
 }
-
 /**
  * Shop listing client.
  *
@@ -53,13 +49,11 @@ export function ShopClient({
   const router = useRouter();
   const params = useSearchParams();
   const [isPending, startTransition] = useTransition();
-
   const [query, setQuery] = useState(params.get('q') ?? '');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [quickView, setQuickView] = useState<Product | null>(null);
   const [localResults, setLocalResults] = useState<ShopProductsPayload | null>(null);
   const [extraItems, setExtraItems] = useState<Product[]>([]);
-
   // ── URL <-> state ────────────────────────────────────────────────────
   const readState = useCallback((): ShopFilterState => {
     const get = (key: string) => (params.get(key) ?? '').split(',').filter(Boolean);
@@ -74,18 +68,15 @@ export function ShopClient({
       inStockOnly: params.get('stock') === '1',
     };
   }, [params]);
-
   const filters = readState();
   const sort = (params.get('sort') as ProductSort) ?? 'featured';
   const page = Number(params.get('page') ?? '1');
   const activeCount = countActiveFilters(filters);
-
   /** Serialises current state into a new query string. */
   const buildUrl = useCallback(
     (overrides: Partial<ShopFilterState> = {}, overridesPage = 1, overridesSort?: ProductSort) => {
       const next: ShopFilterState = { ...filters, ...overrides };
       const sp = new URLSearchParams();
-
       const q = params.get('q');
       if (q) sp.set('q', q);
       if (next.categories.length) sp.set('category', next.categories.join(','));
@@ -101,7 +92,6 @@ export function ShopClient({
     },
     [filters, params, sort],
   );
-
   const push = useCallback(
     (url: string) => {
       startTransition(() => {
@@ -110,13 +100,11 @@ export function ShopClient({
     },
     [router],
   );
-
   // Reset any locally-appended "load more" results when the URL changes.
   useEffect(() => {
     setExtraItems([]);
     setLocalResults(null);
   }, [params]);
-
   // Debounced live search.
   useEffect(() => {
     const current = params.get('q') ?? '';
@@ -131,14 +119,12 @@ export function ShopClient({
     return () => window.clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query]);
-
   // Derived: server page 1 unless we have appended "load more" items.
   const base = localResults ?? initial;
   const visible = useMemo(
     () => (extraItems.length ? [...initial.items, ...extraItems] : initial.items),
     [initial.items, extraItems],
   );
-
   const handleLoadMore = async () => {
     const nextPage = page + 1;
     try {
@@ -154,12 +140,10 @@ export function ShopClient({
       push(buildUrl({}, nextPage));
     }
   };
-
   const goToPage = (target: number) => {
     push(buildUrl({}, target));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
   return (
     <div className="container">
       {/* ── Toolbar ──────────────────────────────────────────────────── */}
@@ -188,7 +172,6 @@ export function ShopClient({
             </button>
           )}
         </div>
-
         <div className="flex items-center gap-2.5">
           <Button
             variant="outline"
@@ -204,7 +187,6 @@ export function ShopClient({
               </span>
             )}
           </Button>
-
           <label className="relative flex-1 sm:flex-none">
             <span className="sr-only">Sort products</span>
             <select
@@ -225,7 +207,6 @@ export function ShopClient({
           </label>
         </div>
       </div>
-
       {/* Active filter chips */}
       {activeCount > 0 && (
         <div className="flex flex-wrap items-center gap-2 py-4">
@@ -288,7 +269,6 @@ export function ShopClient({
           </button>
         </div>
       )}
-
       <div className="flex gap-8 py-6">
         <FilterSidebar
           state={filters}
@@ -298,7 +278,6 @@ export function ShopClient({
           onClose={() => setFiltersOpen(false)}
           resultCount={base.total}
         />
-
         {/* ── Results ─────────────────────────────────────────────────── */}
         <div className="min-w-0 flex-1">
           <div className="mb-4 flex items-center justify-between">
@@ -318,14 +297,13 @@ export function ShopClient({
               Page {base.page} of {base.totalPages}
             </span>
           </div>
-
           {isPending ? (
             <ProductGridSkeleton count={8} />
           ) : visible.length === 0 ? (
             <EmptyResults onReset={() => push('/shop')} />
           ) : (
             <>
-              <motion.div
+              <m.div
                 layout
                 className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4"
               >
@@ -337,8 +315,7 @@ export function ShopClient({
                     priority={i < 4}
                   />
                 ))}
-              </motion.div>
-
+              </m.div>
               <div className="mt-12 flex flex-col items-center gap-5">
                 {base.hasMore || page < base.totalPages ? (
                   <>
@@ -350,7 +327,6 @@ export function ShopClient({
                     >
                       Load more phones
                     </Button>
-
                     {base.totalPages > 2 && (
                       <nav aria-label="Pagination" className="flex items-center gap-1.5">
                         {Array.from({ length: base.totalPages }).map((_, i) => {
@@ -364,7 +340,7 @@ export function ShopClient({
                               aria-current={current ? 'page' : undefined}
                               className={
                                 current
-                                  ? 'h-10 min-w-10 rounded-xl bg-ink-900 px-3 text-sm font-bold text-white'
+                                  ? 'h-10 min-w-10 rounded-xl bg-brand-gradient px-3 text-sm font-bold text-white shadow-soft'
                                   : 'h-10 min-w-10 rounded-xl px-3 text-sm font-semibold text-ink-700 transition-colors hover:bg-surface-100'
                               }
                             >
@@ -385,12 +361,10 @@ export function ShopClient({
           )}
         </div>
       </div>
-
       <QuickViewModal product={quickView} onClose={() => setQuickView(null)} />
     </div>
   );
 }
-
 function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-500/8 py-1.5 pl-3 pr-1.5 text-xs font-semibold text-brand-700">
@@ -406,7 +380,6 @@ function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
     </span>
   );
 }
-
 function EmptyResults({ onReset }: { onReset: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-surface-300 bg-surface-50 px-6 py-20 text-center">

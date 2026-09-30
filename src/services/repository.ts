@@ -1,4 +1,4 @@
-﻿import { generateOrderNumber, generateReference, sanitizeText } from '@/lib/utils';
+import { generateOrderNumber, generateReference, sanitizeText } from '@/lib/utils';
 import { getProductById } from './catalogService';
 import {
   variantPrice,
@@ -50,7 +50,71 @@ function store(): GlobalStore {
   return g.__mexStore;
 }
 
-/* â”€â”€ Orders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* - Persistence mirror - */
+
+/**
+ * Mirrors a write into SQLite so the admin panel can see it.
+ *
+ * The in-memory Map is kept as a fast read path for the current process, but
+ * it is no longer the only copy: without this, every order, booking, trade-in
+ * and enquiry would vanish on redeploy. Persistence failures are logged but
+ * never thrown, because a full disk should not 500 a customer's checkout.
+ */
+type PersistTable = 'orders' | 'bookings' | 'sell_requests' | 'inquiries';
+
+interface PersistInput {
+  id: string;
+  orderNumber?: string;
+  reference?: string;
+  totalPaise?: number;
+  quotedPaise?: number;
+  payload: Record<string, unknown>;
+}
+
+function persist(table: PersistTable, input: PersistInput): void {
+  try {
+    const { db, now } = require('@/lib/db') as typeof import('@/lib/db');
+    const ts = now();
+    const payload = JSON.stringify(input.payload);
+
+    if (table === 'orders') {
+      db.prepare(
+        `INSERT INTO orders (id, orderNumber, payload, totalPaise, status, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, 'pending', ?, ?)
+         ON CONFLICT(orderNumber) DO UPDATE SET payload = excluded.payload, updatedAt = ?`,
+      ).run(input.id, input.orderNumber ?? input.id, payload, input.totalPaise ?? 0, ts, ts, ts);
+      return;
+    }
+
+    if (table === 'inquiries') {
+      db.prepare(
+        `INSERT INTO inquiries (id, payload, status, createdAt, updatedAt)
+         VALUES (?, ?, 'new', ?, ?)`,
+      ).run(input.id, payload, ts, ts);
+      return;
+    }
+
+    if (table === 'bookings') {
+      db.prepare(
+        `INSERT INTO bookings (id, reference, payload, status, createdAt, updatedAt)
+         VALUES (?, ?, ?, 'pending', ?, ?)
+         ON CONFLICT(reference) DO UPDATE SET payload = excluded.payload, updatedAt = ?`,
+      ).run(input.id, input.reference ?? input.id, payload, ts, ts, ts);
+      return;
+    }
+
+    db.prepare(
+      `INSERT INTO sell_requests (id, reference, payload, quotedPaise, status, createdAt, updatedAt)
+       VALUES (?, ?, ?, ?, 'pending', ?, ?)
+       ON CONFLICT(reference) DO UPDATE SET payload = excluded.payload, updatedAt = ?`,
+    ).run(input.id, input.reference ?? input.id, payload, input.quotedPaise ?? 0, ts, ts, ts);
+  } catch (error) {
+    // Never rethrow: losing the audit copy must not fail the customer's order.
+    console.error(`[repository] could not persist to ${table}:`, error);
+  }
+}
+
+/* - Orders - */
 
 export interface CreateOrderArgs {
   fullName: string;
@@ -71,7 +135,7 @@ export interface CreateOrderArgs {
  * Builds an order from untrusted client input.
  *
  * Prices, stock and discounts are **always recomputed server-side** from the
- * catalogue â€” the client only says which product and variant it wants.
+ * catalogue ' the client only says which product and variant it wants.
  */
 export function createOrder(args: CreateOrderArgs): Order {
   const lines: OrderLine[] = [];
@@ -79,7 +143,7 @@ export function createOrder(args: CreateOrderArgs): Order {
   const accessories = new Map(seedAccessories.map((a) => [accessoryId(a.id), a]));
 
   for (const line of args.lines) {
-    // â”€â”€ Accessory line â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // - Accessory line -
     if (isAccessoryLine(line.productId)) {
       const accessory = accessories.get(line.productId);
       if (!accessory) {
@@ -106,7 +170,7 @@ export function createOrder(args: CreateOrderArgs): Order {
       continue;
     }
 
-    // â”€â”€ Phone line â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // - Phone line -
     const product = getProductById(line.productId);
     if (!product) {
       problems.push('An item in your cart is no longer available.');
@@ -184,6 +248,12 @@ export function createOrder(args: CreateOrderArgs): Order {
   };
 
   store().orders.set(order.id, order);
+  persist('orders', {
+    id: order.id,
+    orderNumber: order.orderNumber,
+    totalPaise: order.totals?.grandTotalPaise ?? 0,
+    payload: order as unknown as Record<string, unknown>,
+  });
   return order;
 }
 
@@ -204,7 +274,7 @@ export function updateOrder(id: string, patch: Partial<Order>): Order | null {
   return next;
 }
 
-/* â”€â”€ Repair bookings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* - Repair bookings - */
 
 export function createRepairBooking(
   input: Omit<RepairBooking, 'id' | 'reference' | 'createdAt' | 'estimatedFromPaise'>,
@@ -232,10 +302,15 @@ export function createRepairBooking(
   };
 
   store().bookings.set(booking.id, booking);
+  persist('bookings', {
+    id: booking.id,
+    reference: booking.reference,
+    payload: booking as unknown as Record<string, unknown>,
+  });
   return booking;
 }
 
-/* â”€â”€ Sell-phone requests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* - Sell-phone requests - */
 
 export interface QuoteInput {
   brand: string;
@@ -305,10 +380,16 @@ export function createSellPhoneRequest(
   };
 
   store().sellRequests.set(request.id, request);
+  persist('sell_requests', {
+    id: request.id,
+    reference: request.reference,
+    quotedPaise: request.estimatedValuePaise,
+    payload: request as unknown as Record<string, unknown>,
+  });
   return request;
 }
 
-/* â”€â”€ Contact inquiries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* - Contact inquiries - */
 
 export function createContactInquiry(
   input: Omit<ContactInquiry, 'id' | 'createdAt'>,
@@ -323,5 +404,9 @@ export function createContactInquiry(
     message: sanitizeText(input.message, 1500),
   };
   store().inquiries.set(inquiry.id, inquiry);
+  persist('inquiries', {
+    id: inquiry.id,
+    payload: inquiry as unknown as Record<string, unknown>,
+  });
   return inquiry;
 }

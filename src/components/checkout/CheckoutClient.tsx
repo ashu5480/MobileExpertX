@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import {
   AlertTriangle,
@@ -23,16 +23,13 @@ import { deliveryMethods } from '@/data/store';
 import { siteConfig } from '@/lib/config';
 import { formatPrice, cn } from '@/lib/utils';
 import type { DeliveryMethodId } from '@/types';
-
 const STATES = [
   'Andhra Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Delhi', 'Goa', 'Gujarat',
   'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala',
   'Madhya Pradesh', 'Maharashtra', 'Odisha', 'Punjab', 'Rajasthan', 'Tamil Nadu',
   'Telangana', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
 ];
-
 const METHOD_ICONS = { truck: Truck, zap: Zap, store: Store } as const;
-
 /**
  * ────────────────────────────────────────────────────────────────────────────
  *  Checkout
@@ -54,7 +51,6 @@ export function CheckoutClient() {
   const router = useRouter();
   const { entries, lines, couponCode, deliveryMethod, setDeliveryMethod, clearCart } = useCart();
   const { celebrate, error: errorToast } = useToast();
-
   const [form, setForm] = useState({
     fullName: '',
     phone: '',
@@ -70,7 +66,6 @@ export function CheckoutClient() {
   const [submitting, setSubmitting] = useState(false);
   const [payment, setPayment] = useState<PaymentConfig | null>(null);
   const [step, setStep] = useState<'details' | 'paying'>('details');
-
   const set = useCallback((key: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => {
@@ -80,11 +75,9 @@ export function CheckoutClient() {
       return next;
     });
   }, []);
-
   const validate = useCallback((): CheckoutInput | null => {
     const parsed = checkoutSchema.safeParse({ ...form, deliveryMethod, saveInfo: true });
     if (parsed.success) return parsed.data;
-
     const next: Record<string, string> = {};
     for (const issue of parsed.error.issues) {
       const key = String(issue.path[0] ?? 'form');
@@ -96,7 +89,6 @@ export function CheckoutClient() {
     });
     return null;
   }, [form, deliveryMethod]);
-
   /**
    * Opens the real gateway checkout. Only reached when a live provider is
    * configured — the secret keys stay on the server; the browser only ever
@@ -117,9 +109,7 @@ export function CheckoutClient() {
             s.onerror = () => reject(new Error('Could not load the payment window.'));
             document.body.appendChild(s);
           });
-
         await loadScript();
-
         const Razorpay = (
           window as unknown as {
             Razorpay: new (options: Record<string, unknown>) => {
@@ -128,7 +118,6 @@ export function CheckoutClient() {
             };
           }
         ).Razorpay;
-
         return new Promise((resolve, reject) => {
           const instance = new Razorpay({
             key: config.razorpayKeyId,
@@ -138,7 +127,7 @@ export function CheckoutClient() {
             description: `Order ${config.orderNumber}`,
             prefill: { name: form.fullName, contact: form.phone, email: form.email },
             notes: { orderId: config.orderId, orderNumber: config.orderNumber },
-            theme: { color: '#2563FF' },
+            theme: { color: '#10B981' },
             handler: (response: Record<string, string>) =>
               resolve({
                 reference: response.razorpay_payment_id,
@@ -149,23 +138,19 @@ export function CheckoutClient() {
           instance.open();
         });
       }
-
       if (config.provider === 'stripe') {
         // Stripe.js mounts on demand; the PaymentIntent reference is sent back
         // so the server can independently confirm the charge with Stripe's API.
         return { reference: config.orderId };
       }
-
       // Mock / test mode — no real money moves.
       return { reference: `test_${Date.now().toString(36)}` };
     },
     [form.email, form.fullName, form.phone],
   );
-
   const submit = async () => {
     const checkout = validate();
     if (!checkout) return;
-
     setSubmitting(true);
     setStep('paying');
     try {
@@ -180,14 +165,11 @@ export function CheckoutClient() {
         couponCode,
         claimedSubtotalPaise: undefined,
       });
-
       // 2 · Ask the gateway for an intent.
       const { payment: config } = await paymentsApi.createIntent(order.id);
       setPayment(config);
-
       // 3 · Collect payment (real gateway, or an explicit test simulation).
       const { reference, signature } = await openGateway(config);
-
       // 4 · Server-side verification — the only thing that marks it paid.
       const result = await paymentsApi.verify({
         orderId: order.id,
@@ -195,14 +177,11 @@ export function CheckoutClient() {
         paymentReference: reference,
         signature,
       });
-
       if (!result.verified) {
         throw new Error(result.message);
       }
-
       clearCart();
       celebrate('Order confirmed', `Order ${result.order.orderNumber} is on its way.`);
-
       // Hand off to the confirmation page, which renders the premium success state.
       window.sessionStorage.setItem(
         `mex.order.${result.order.orderNumber}`,
@@ -226,7 +205,6 @@ export function CheckoutClient() {
       setSubmitting(false);
     }
   };
-
   if (entries.length === 0 && step === 'details') {
     return (
       <div className="container py-20">
@@ -245,14 +223,12 @@ export function CheckoutClient() {
       </div>
     );
   }
-
   return (
     <div className="container pb-24 pt-6 lg:pb-16">
       <h1 className="text-display-sm font-extrabold tracking-tight text-ink-900">Checkout</h1>
       <p className="mt-2 text-sm text-ink-600">
         Your details, delivery preference, then a secure payment.
       </p>
-
       {/* Test-mode disclosure — never imply a real charge happened */}
       {payment && !payment.isLive && (
         <div className="mt-5 flex items-start gap-2.5 rounded-2xl border border-amber-400/30 bg-amber-50 p-4 text-sm text-amber-800">
@@ -268,7 +244,6 @@ export function CheckoutClient() {
           </p>
         </div>
       )}
-
       <div className="mt-8 grid gap-8 lg:grid-cols-3 lg:gap-10">
         {/* ── Form ────────────────────────────────────────────────────── */}
         <div className="space-y-6 lg:col-span-2">
@@ -321,7 +296,6 @@ export function CheckoutClient() {
               </div>
             </div>
           </section>
-
           {/* Address */}
           <section className="rounded-3xl border border-surface-200 bg-white p-6 shadow-soft">
             <h2 className="text-lg font-bold tracking-tight text-ink-900">
@@ -402,7 +376,6 @@ export function CheckoutClient() {
               </div>
             </div>
           </section>
-
           {/* Delivery method */}
           <section className="rounded-3xl border border-surface-200 bg-white p-6 shadow-soft">
             <h2 className="text-lg font-bold tracking-tight text-ink-900">Delivery method</h2>
@@ -448,7 +421,6 @@ export function CheckoutClient() {
               })}
             </div>
           </section>
-
           {/* Payment */}
           <section className="rounded-3xl border border-surface-200 bg-white p-6 shadow-soft">
             <h2 className="text-lg font-bold tracking-tight text-ink-900">Payment</h2>
@@ -468,7 +440,6 @@ export function CheckoutClient() {
                 </p>
               </div>
             </div>
-
             <Button
               size="lg"
               fullWidth
@@ -483,27 +454,24 @@ export function CheckoutClient() {
               )}{' '}
               securely
             </Button>
-
             {submitting && (
-              <motion.p
+              <m.p
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-3 text-center text-xs text-ink-500"
               >
                 Please do not close or refresh this window. We are confirming your payment
                 with the gateway.
-              </motion.p>
+              </m.p>
             )}
           </section>
         </div>
-
         {/* ── Summary ────────────────────────────────────────────────── */}
         <aside className="lg:sticky lg:top-28 lg:self-start">
           <div className="rounded-3xl border border-surface-200 bg-white p-6 shadow-card">
             <h2 className="text-lg font-bold tracking-tight text-ink-900">
               Order summary
             </h2>
-
             <ul className="mt-5 max-h-64 space-y-3 overflow-y-auto pr-1">
               {entries.map((entry) => (
                 <li
@@ -518,7 +486,7 @@ export function CheckoutClient() {
                       rounded="rounded-lg"
                       className="h-full w-full"
                     />
-                    <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-ink-900 px-1 text-[10px] font-bold text-white">
+                    <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-brand-gradient px-1 text-[10px] font-bold text-white">
                       {entry.line.quantity}
                     </span>
                   </span>
@@ -540,7 +508,6 @@ export function CheckoutClient() {
                 </li>
               ))}
             </ul>
-
             <CheckoutTotals />
           </div>
         </aside>
@@ -548,11 +515,9 @@ export function CheckoutClient() {
     </div>
   );
 }
-
 /** Totals block, shared by the checkout summary. */
 function CheckoutTotals() {
   const { totals, couponCode } = useCart();
-
   return (
     <dl className="mt-6 space-y-2.5 border-t border-surface-200 pt-5 text-sm">
       <div className="flex justify-between">
@@ -590,8 +555,3 @@ function CheckoutTotals() {
     </dl>
   );
 }
-
-
-
-
-

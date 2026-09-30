@@ -8,9 +8,20 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        // Transactional and API routes carry no search value and must never
-        // be indexed (or crawled for parameter injection).
-        disallow: ['/api/', '/cart', '/checkout', '/checkout/', '/wishlist', '/account', '/*?*'],
+        // Transactional, private and API routes carry no search value and must
+        // never be indexed (or crawled for parameter injection).
+        disallow: [
+          '/api/',
+          '/admin',
+          '/login',
+          '/cart',
+          '/checkout',
+          '/checkout/',
+          '/wishlist',
+          '/account',
+          '/uploads/',
+          '/*?*',
+        ],
       },
     ],
     sitemap: `${base}/sitemap.xml`,

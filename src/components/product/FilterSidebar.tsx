@@ -1,13 +1,12 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Check, SlidersHorizontal, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { OptionPill } from '@/components/ui/Field';
 import { conditionLabels, priceRanges, ramOptions, storageOptions } from '@/data/catalog';
 import { cn } from '@/lib/utils';
 import type { ProductCategory, ProductCondition } from '@/types';
-
 export interface ShopFilterState {
   categories: ProductCategory[];
   brands: string[];
@@ -17,7 +16,6 @@ export interface ShopFilterState {
   priceRange: number | null;
   inStockOnly: boolean;
 }
-
 export const emptyFilters: ShopFilterState = {
   categories: [],
   brands: [],
@@ -27,7 +25,6 @@ export const emptyFilters: ShopFilterState = {
   priceRange: null,
   inStockOnly: false,
 };
-
 export const countActiveFilters = (f: ShopFilterState) =>
   f.categories.length +
   f.brands.length +
@@ -36,7 +33,6 @@ export const countActiveFilters = (f: ShopFilterState) =>
   f.storages.length +
   (f.priceRange !== null ? 1 : 0) +
   (f.inStockOnly ? 1 : 0);
-
 const CATEGORY_LABELS: Record<ProductCategory, string> = {
   flagship: 'Flagship',
   'mid-range': 'Mid-range',
@@ -45,7 +41,6 @@ const CATEGORY_LABELS: Record<ProductCategory, string> = {
   refurbished: 'Refurbished',
   accessory: 'Accessories',
 };
-
 /**
  * Shop filter panel.
  *
@@ -69,7 +64,6 @@ export function FilterSidebar({
   resultCount: number;
 }) {
   const active = countActiveFilters(state);
-
   const toggle = (key: 'categories' | 'brands' | 'conditions' | 'rams' | 'storages', value: string) => {
     const list = state[key] as string[];
     onChange({
@@ -77,7 +71,6 @@ export function FilterSidebar({
       [key]: (list.includes(value) ? list.filter((v) => v !== value) : [...list, value]) as never,
     } as ShopFilterState);
   };
-
   const body = (
     <div className="space-y-7">
       <Group title="Category">
@@ -93,7 +86,6 @@ export function FilterSidebar({
           ))}
         </div>
       </Group>
-
       <Group title="Condition">
         <div className="flex flex-wrap gap-2">
           {(Object.keys(conditionLabels) as ProductCondition[]).map((c) => (
@@ -107,7 +99,6 @@ export function FilterSidebar({
           ))}
         </div>
       </Group>
-
       <Group title="Price">
         <div className="space-y-1.5">
           {priceRanges.map((range, i) => (
@@ -131,7 +122,6 @@ export function FilterSidebar({
           ))}
         </div>
       </Group>
-
       <Group title="Brand">
         <div className="flex flex-wrap gap-2">
           {brands.map((b) => (
@@ -141,7 +131,6 @@ export function FilterSidebar({
           ))}
         </div>
       </Group>
-
       <Group title="RAM">
         <div className="flex flex-wrap gap-2">
           {ramOptions.map((r) => (
@@ -151,7 +140,6 @@ export function FilterSidebar({
           ))}
         </div>
       </Group>
-
       <Group title="Storage">
         <div className="flex flex-wrap gap-2">
           {storageOptions.map((s) => (
@@ -165,7 +153,6 @@ export function FilterSidebar({
           ))}
         </div>
       </Group>
-
       <Group title="Availability">
         <button
           type="button"
@@ -196,7 +183,6 @@ export function FilterSidebar({
       </Group>
     </div>
   );
-
   return (
     <>
       {/* Desktop — sticky sidebar */}
@@ -220,7 +206,6 @@ export function FilterSidebar({
           {body}
         </div>
       </aside>
-
       {/* Mobile / tablet — bottom sheet */}
       <AnimatePresence>
         {open && (
@@ -230,7 +215,7 @@ export function FilterSidebar({
             aria-modal="true"
             aria-label="Filters"
           >
-            <motion.button
+            <m.button
               type="button"
               aria-label="Close filters"
               initial={{ opacity: 0 }}
@@ -239,7 +224,7 @@ export function FilterSidebar({
               onClick={onClose}
               className="absolute inset-0 h-full w-full cursor-default bg-ink-900/50 backdrop-blur-sm"
             />
-            <motion.div
+            <m.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
@@ -268,9 +253,7 @@ export function FilterSidebar({
                   <X className="h-5 w-5" aria-hidden="true" />
                 </button>
               </header>
-
               <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">{body}</div>
-
               <footer className="flex gap-3 border-t border-surface-200 p-4 pb-safe">
                 <Button
                   variant="outline"
@@ -284,14 +267,13 @@ export function FilterSidebar({
                   Show {resultCount} {resultCount === 1 ? 'result' : 'results'}
                 </Button>
               </footer>
-            </motion.div>
+            </m.div>
           </div>
         )}
       </AnimatePresence>
     </>
   );
 }
-
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <fieldset>

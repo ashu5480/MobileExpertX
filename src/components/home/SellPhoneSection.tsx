@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ArrowRight, IndianRupee, MessageCircle, ShieldCheck, Zap } from 'lucide-react';
 import { ButtonLink } from '@/components/ui/Button';
 import { ProductVisual } from '@/components/product/ProductVisual';
@@ -8,7 +8,6 @@ import { buildWhatsAppUrl, siteConfig, whatsappMessages } from '@/lib/config';
 import { formatPrice } from '@/lib/utils';
 import { stagger, staggerItem, viewportOnce } from '@/lib/motion';
 import { usePrefersReducedMotion } from '@/components/providers/MotionProvider';
-
 /**
  * "Sell your old phone" — the trade-in section.
  *
@@ -19,41 +18,36 @@ import { usePrefersReducedMotion } from '@/components/providers/MotionProvider';
  */
 export function SellPhoneSection() {
   const reduced = usePrefersReducedMotion();
-
   return (
     <section className="section relative overflow-hidden bg-white" aria-labelledby="sell-heading">
       <div className="container">
         <div className="relative overflow-hidden rounded-4xl border border-surface-200 bg-gradient-to-br from-surface-50 via-white to-brand-50 p-6 shadow-card sm:p-10 lg:p-14">
           <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-500/12 blur-3xl" aria-hidden="true" />
           <div className="pointer-events-none absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-purple-500/10 blur-3xl" aria-hidden="true" />
-
           <div className="relative grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
-            <motion.div variants={stagger(0.08)} initial="hidden" whileInView="show" viewport={viewportOnce}>
-              <motion.p
+            <m.div variants={stagger(0.08)} initial="hidden" whileInView="show" viewport={viewportOnce}>
+              <m.p
                 variants={staggerItem}
                 className="text-[12px] font-bold uppercase tracking-[0.14em] text-brand-500"
               >
                 Sell your phone
-              </motion.p>
-
-              <motion.h2
+              </m.p>
+              <m.h2
                 id="sell-heading"
                 variants={staggerItem}
                 className="mt-3 text-display-sm font-extrabold tracking-tight text-ink-900"
               >
                 Turn your old phone into cash.
-              </motion.h2>
-
-              <motion.p
+              </m.h2>
+              <m.p
                 variants={staggerItem}
                 className="mt-4 max-w-lg text-base leading-relaxed text-ink-600"
               >
                 Answer eight quick questions and we will show you an honest
                 estimate instantly. No lowball offers, and the price you see is
                 the price you get after inspection.
-              </motion.p>
-
-              <motion.ul variants={staggerItem} className="mt-7 space-y-2.5">
+              </m.p>
+              <m.ul variants={staggerItem} className="mt-7 space-y-2.5">
                 {[
                   { icon: Zap, text: 'Instant valuation — no waiting, no forms to download' },
                   { icon: IndianRupee, text: 'Cash in hand the same day at our Ahmedabad store' },
@@ -66,9 +60,8 @@ export function SellPhoneSection() {
                     {item.text}
                   </li>
                 ))}
-              </motion.ul>
-
-              <motion.div variants={staggerItem} className="mt-8 flex flex-wrap gap-3">
+              </m.ul>
+              <m.div variants={staggerItem} className="mt-8 flex flex-wrap gap-3">
                 <ButtonLink href="/sell-phone" size="lg">
                   Check your phone&apos;s value
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -85,18 +78,17 @@ export function SellPhoneSection() {
                   <MessageCircle className="h-4 w-4" aria-hidden="true" />
                   Sell on WhatsApp
                 </a>
-              </motion.div>
-            </motion.div>
-
+              </m.div>
+            </m.div>
             {/* Phone → cash visual */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0, scale: 0.92 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={viewportOnce}
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
               className="relative mx-auto aspect-[4/3] w-full max-w-md"
             >
-              <motion.div
+              <m.div
                 animate={reduced ? {} : { y: [0, -10, 0], rotate: [-6, -4, -6] }}
                 transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
                 className="absolute left-0 top-1/2 w-[38%] -translate-y-1/2"
@@ -111,22 +103,20 @@ export function SellPhoneSection() {
                     className="h-full w-full"
                   />
                 </div>
-              </motion.div>
-
+              </m.div>
               {/* Sweeping dissolve between the two */}
               <div
                 className="absolute left-[34%] top-1/2 h-px w-[32%] -translate-y-1/2 overflow-hidden bg-gradient-to-r from-transparent via-brand-500/40 to-transparent"
                 aria-hidden="true"
               >
-                <motion.span
+                <m.span
                   className="block h-full bg-brand-gradient"
                   animate={reduced ? {} : { scaleX: [0, 1], opacity: [0, 1, 0] }}
                   transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
                 />
               </div>
-
               {/* Cash */}
-              <motion.div
+              <m.div
                 animate={reduced ? {} : { y: [0, 10, 0], rotate: [6, 9, 6] }}
                 transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
                 className="absolute right-0 top-1/2 w-[40%] -translate-y-1/2"
@@ -155,10 +145,9 @@ export function SellPhoneSection() {
                     </div>
                   ))}
                 </div>
-              </motion.div>
-
+              </m.div>
               {/* Floating quote chip */}
-              <motion.div
+              <m.div
                 animate={reduced ? {} : { y: [0, -8, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
                 className="absolute left-1/2 top-0 -translate-x-1/2"
@@ -171,8 +160,8 @@ export function SellPhoneSection() {
                     {formatPrice(2450000)}
                   </p>
                 </div>
-              </motion.div>
-            </motion.div>
+              </m.div>
+            </m.div>
           </div>
         </div>
       </div>

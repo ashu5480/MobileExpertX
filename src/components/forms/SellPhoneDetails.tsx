@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { ArrowLeft, Building2, CheckCircle2, MessageCircle, Phone, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
@@ -19,14 +19,12 @@ import {
 import { formatPrice, todayISO } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import type { SellQuote } from '@/lib/pricing';
-
 interface Props {
   state: WizardState;
   quote: SellQuote;
   imageCount: number;
   onBack: () => void;
 }
-
 /**
  * Steps 7 and 8 of the sell-phone flow: customer details and pickup preference.
  *
@@ -40,7 +38,6 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [done, setDone] = useState<{ reference: string; message: string } | null>(null);
-
   const [form, setForm] = useState({
     customerName: '',
     customerPhone: '',
@@ -50,7 +47,6 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
     pickupTime: pickupTimeSlots[1],
     notes: '',
   });
-
   const set = (key: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => {
@@ -60,7 +56,6 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
       return next;
     });
   };
-
   const validateStep7 = (): boolean => {
     const candidate = {
       customerName: form.customerName,
@@ -79,7 +74,6 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
       })
       .safeParse({ ...candidate, pickupDate: form.pickupDate, pickupTime: form.pickupTime });
     if (result.success) return true;
-
     const next: Record<string, string> = {};
     for (const issue of result.error.issues) {
       const key = String(issue.path[0] ?? 'form');
@@ -88,11 +82,9 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
     setErrors(next);
     return false;
   };
-
   const submit = async () => {
     setSubmitting(true);
     setErrors({});
-
     const payload: SellPhoneInput = {
       brand: state.brand,
       model: state.model,
@@ -115,7 +107,6 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
       imageCount,
       notes: form.notes || undefined,
     };
-
     try {
       const { request, message } = await sellPhoneApi.submit(payload);
       setDone({ reference: request.reference, message });
@@ -138,7 +129,6 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
       setSubmitting(false);
     }
   };
-
   const whatsappSummary = [
     `Device: ${state.brand} ${state.model} · ${state.storage}`,
     `Condition: ${state.condition.replace('-', ' ')} (screen: ${state.screen}, battery: ${state.battery})`,
@@ -146,11 +136,10 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
     state.hasOriginalBox ? 'I have the original box' : 'No original box',
     `My name: ${form.customerName || '(name here)'}`,
   ].join('\n');
-
   // ── Success state ───────────────────────────────────────────────────────
   if (done) {
     return (
-      <motion.div
+      <m.div
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
         className="rounded-3xl border border-emerald-500/25 bg-white p-8 text-center shadow-card sm:p-10"
@@ -165,7 +154,6 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
         <p className="mt-4 inline-flex rounded-full bg-surface-100 px-3.5 py-1.5 font-mono text-sm font-semibold text-ink-800">
           {done.reference}
         </p>
-
         <div className="mt-7 grid gap-2.5 sm:grid-cols-2">
           <a
             href={buildWhatsAppUrl(
@@ -187,14 +175,12 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
             Call {siteConfig.contact.phoneDisplay}
           </a>
         </div>
-      </motion.div>
+      </m.div>
     );
   }
-
   return (
     <div className="rounded-3xl border border-surface-200 bg-white p-5 shadow-card sm:p-8">
       <WizardProgress step={step} />
-
       <div className="mt-8">
         {step === 7 ? (
           <div>
@@ -204,7 +190,6 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
             <p className="mt-2 text-sm leading-relaxed text-ink-600">
               We will confirm the quote and the pickup slot with you personally.
             </p>
-
             <div className="mt-6 space-y-4">
               <Field label="Full name" htmlFor="sell-name" error={errors.customerName} required>
                 <Input
@@ -216,7 +201,6 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
                   error={errors.customerName}
                 />
               </Field>
-
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
                   label="Mobile number"
@@ -236,7 +220,6 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
                     error={errors.customerPhone}
                   />
                 </Field>
-
                 <Field label="Email" htmlFor="sell-email" error={errors.customerEmail} required>
                   <Input
                     id="sell-email"
@@ -249,7 +232,6 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
                   />
                 </Field>
               </div>
-
               <Field
                 label="Pickup address"
                 htmlFor="sell-address"
@@ -267,7 +249,6 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
                 />
               </Field>
             </div>
-
             <div className="mt-8 flex gap-3">
               <Button variant="outline" onClick={onBack}>
                 <ArrowLeft className="h-4 w-4" aria-hidden="true" />
@@ -293,7 +274,6 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
               We will confirm this slot by phone. If nothing works, walk in any time
               during {siteConfig.hours.display}.
             </p>
-
             <div className="mt-6 space-y-5">
               <Field
                 label="Preferred date"
@@ -310,7 +290,6 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
                   error={errors.pickupDate}
                 />
               </Field>
-
               <div>
                 <h3 className="mb-2.5 text-[13px] font-semibold text-ink-800">
                   Preferred time slot
@@ -332,7 +311,6 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
                   </p>
                 )}
               </div>
-
               <Field
                 label="Anything else we should know?"
                 htmlFor="sell-notes"
@@ -346,7 +324,6 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
                   placeholder="Optional notes…"
                 />
               </Field>
-
               {/* Recap */}
               <div className="rounded-2xl border border-brand-500/20 bg-brand-500/5 p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-600">
@@ -361,7 +338,6 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
                 </p>
               </div>
             </div>
-
             <div className="mt-8 flex flex-col gap-3">
               <Button
                 size="lg"
@@ -377,12 +353,10 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
                 Back
               </Button>
             </div>
-
             <p className="mt-5 flex items-start gap-2 text-xs leading-relaxed text-ink-500">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" aria-hidden="true" />
               We factory-reset and data-wipe every device on receipt. You can watch us do it.
             </p>
-
             <div className="mt-5 border-t border-surface-200 pt-5">
               <p className="text-xs font-semibold text-ink-600">Prefer to talk?</p>
               <div className="mt-2.5 grid gap-2.5 sm:grid-cols-2">

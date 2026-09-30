@@ -1,30 +1,26 @@
 import 'server-only';
 import { db, id, now, rows } from '@/lib/db';
 import { sanitizeText } from '@/lib/utils';
+import {
+  LISTING_CATEGORIES,
+  LISTING_CONDITIONS,
+  type Listing,
+  type ListingCategory,
+  type ListingCondition,
+  type ListingInput,
+} from '@/lib/listing-shared';
 
 /**
- * Customer listings -- the "my items" area.
+ * Customer listings -- the "my items" area. Server-only: it touches SQLite.
+ *
+ * Types and validation live in `@/lib/listing-shared` so client components
+ * can import them without pulling the database into the browser bundle.
  *
  * Every read and write is scoped by `userId`, so one customer can never see
  * or edit another customer's item by guessing an id.
  */
 
-export const LISTING_CATEGORIES = ['phone', 'tablet', 'laptop', 'accessory'] as const;
-export const LISTING_CONDITIONS = ['new', 'used', 'refurbished'] as const;
-
-export interface Listing {
-  id: string;
-  userId: string;
-  title: string;
-  description: string;
-  pricePaise: number;
-  category: string;
-  condition: string;
-  photos: string[];
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-}
+export { LISTING_CATEGORIES, LISTING_CONDITIONS, type Listing, type ListingInput };
 
 interface ListingRow {
   id: string;
@@ -125,15 +121,6 @@ export function listAll(page = 1, pageSize = 20): Page<Listing & { ownerName: st
 
 /* ── Writes ───────────────────────────────────────────────────────────────── */
 
-export interface ListingInput {
-  title: string;
-  description: string;
-  pricePaise: number;
-  category: string;
-  condition: string;
-  photos: string[];
-}
-
 export function createListing(userId: string, input: ListingInput): Listing {
   const record = {
     id: id('lst'),
@@ -141,8 +128,8 @@ export function createListing(userId: string, input: ListingInput): Listing {
     title: sanitizeText(input.title).slice(0, 120),
     description: sanitizeText(input.description).slice(0, 4000),
     pricePaise: Math.max(0, Math.round(input.pricePaise)),
-    category: LISTING_CATEGORIES.includes(input.category as never) ? input.category : 'phone',
-    condition: LISTING_CONDITIONS.includes(input.condition as never)
+    category: LISTING_CATEGORIES.includes(input.category as ListingCategory) ? input.category : 'phone',
+    condition: LISTING_CONDITIONS.includes(input.condition as ListingCondition)
       ? input.condition
       : 'used',
     photos: JSON.stringify(input.photos.slice(0, 6)),
