@@ -29,7 +29,7 @@ export default async function LoginPage() {
   }
 
   const user = await currentUser();
-  if (user) redirect(user.role === 'admin' ? '/admin' : '/account');
+  if (user) redirect(user.role === 'admin' ? '/admin' : '/');
 
   return (
     <main className="flex min-h-[70vh] items-center justify-center bg-surface-50 px-5 py-14">

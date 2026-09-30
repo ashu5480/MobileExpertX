@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { repairBookingSchema, fieldErrors } from '@/lib/validation';
 import { createRepairBooking } from '@/services/repository';
 import { siteConfig } from '@/lib/config';
+import { apiUser } from '@/lib/guards';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -23,7 +24,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const booking = await createRepairBooking(parsed.data);
+  // Guests can book a repair too; stamp the account when there is one.
+  const user = await apiUser();
+  const booking = await createRepairBooking(parsed.data, user?.id ?? null);
 
   return NextResponse.json(
     {

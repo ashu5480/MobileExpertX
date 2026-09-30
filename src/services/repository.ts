@@ -1,5 +1,5 @@
 import { generateOrderNumber, generateReference, sanitizeText } from '@/lib/utils';
-import { bookings, inquiries, now, orders, sellRequests } from '@/lib/mongo';
+import { bookings, inquiries, now, orders, sellRequests, type QueueDoc } from '@/lib/mongo';
 import { getProductById } from './catalogService';
 import {
   variantPrice,
@@ -77,6 +77,12 @@ interface PersistInput {
   totalPaise?: number;
   quotedPaise?: number;
   payload: Record<string, unknown>;
+  /**
+   * Set when the submitter was signed in. Guests leave it undefined, so a
+   * guest checkout still records an order — it simply is not listed under any
+   * account, because there is no account to list it under.
+   */
+  userId?: string | null;
 }
 
 /**
@@ -99,7 +105,12 @@ async function persist(table: PersistTable, input: PersistInput): Promise<void> 
     await (await orders()).updateOne(
       { reference: input.orderNumber ?? input.id },
       {
-        $set: { payload: input.payload, totalPaise: input.totalPaise ?? 0, updatedAt: ts },
+        $set: {
+          payload: input.payload,
+          totalPaise: input.totalPaise ?? 0,
+          userId: input.userId ?? null,
+          updatedAt: ts,
+        },
         $setOnInsert: {
           _id: input.id,
           reference: input.orderNumber ?? input.id,
@@ -119,6 +130,7 @@ async function persist(table: PersistTable, input: PersistInput): Promise<void> 
       _id: input.id,
       reference: input.id,
       payload: input.payload,
+      userId: input.userId ?? null,
       status: 'new',
       createdAt: ts,
       updatedAt: ts,
@@ -133,6 +145,7 @@ async function persist(table: PersistTable, input: PersistInput): Promise<void> 
     {
       $set: {
         payload: input.payload,
+        userId: input.userId ?? null,
         ...(table === 'sell_requests' ? { quotedPaise: input.quotedPaise ?? 0 } : {}),
         updatedAt: ts,
       },
@@ -171,7 +184,10 @@ export interface CreateOrderArgs {
  * Prices, stock and discounts are **always recomputed server-side** from the
  * catalogue ' the client only says which product and variant it wants.
  */
-export async function createOrder(args: CreateOrderArgs): Promise<Order> {
+export async function createOrder(
+  args: CreateOrderArgs,
+  userId?: string | null,
+): Promise<Order> {
   const lines: OrderLine[] = [];
   const problems: string[] = [];
   const accessories = new Map(seedAccessories.map((a) => [accessoryId(a.id), a]));
@@ -288,6 +304,7 @@ export async function createOrder(args: CreateOrderArgs): Promise<Order> {
     id: order.id,
     orderNumber: order.orderNumber,
     totalPaise: order.totals?.grandTotalPaise ?? 0,
+    userId,
     payload: order as unknown as Record<string, unknown>,
   });
   store().orders.set(order.id, order);
@@ -349,6 +366,7 @@ export async function updateOrder(id: string, patch: Partial<Order>): Promise<Or
 
 export async function createRepairBooking(
   input: Omit<RepairBooking, 'id' | 'reference' | 'createdAt' | 'estimatedFromPaise'>,
+  userId?: string | null,
 ): Promise<RepairBooking> {
   const service = input.serviceSlug
     ? repairServices.find((s) => s.slug === input.serviceSlug)
@@ -375,6 +393,7 @@ export async function createRepairBooking(
   await persist('bookings', {
     id: booking.id,
     reference: booking.reference,
+    userId,
     payload: booking as unknown as Record<string, unknown>,
   });
   store().bookings.set(booking.id, booking);
@@ -420,6 +439,7 @@ export function quoteSellPhone(input: QuoteInput): SellQuote {
 
 export async function createSellPhoneRequest(
   input: Omit<SellPhoneRequest, 'id' | 'reference' | 'createdAt' | 'estimatedValuePaise'>,
+  userId?: string | null,
 ): Promise<SellPhoneRequest> {
   // Re-derive the valuation on the server so a tampered client cannot inflate
   // or deflate the recorded quote.
@@ -454,6 +474,7 @@ export async function createSellPhoneRequest(
     id: request.id,
     reference: request.reference,
     quotedPaise: request.estimatedValuePaise,
+    userId,
     payload: request as unknown as Record<string, unknown>,
   });
   store().sellRequests.set(request.id, request);
@@ -464,6 +485,7 @@ export async function createSellPhoneRequest(
 
 export async function createContactInquiry(
   input: Omit<ContactInquiry, 'id' | 'createdAt'>,
+  userId?: string | null,
 ): Promise<ContactInquiry> {
   const inquiry: ContactInquiry = {
     id: `inq_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
@@ -474,10 +496,108 @@ export async function createContactInquiry(
     subject: sanitizeText(input.subject, 120),
     message: sanitizeText(input.message, 1500),
   };
+
   await persist('inquiries', {
     id: inquiry.id,
+    userId,
     payload: inquiry as unknown as Record<string, unknown>,
   });
   store().inquiries.set(inquiry.id, inquiry);
   return inquiry;
 }
+
+/* - Customer history ------------------------------------------------------- */
+
+/**
+ * One row as the account dashboard shows it.
+ *
+ * Deliberately a flat summary rather than the full stored payload: the
+ * dashboard renders a list, and handing the browser the whole object would
+ * expose more than the customer needs to see their own history.
+ */
+export interface CustomerRequestRow {
+  id: string;
+  reference: string;
+  status: string;
+  createdAt: string;
+  /** Order value, or the quoted trade-in value. 0 when not applicable. */
+  amountPaise: number;
+  /** Best-effort headline, e.g. "OnePlus 12" or "screen replacement". */
+  title: string;
+}
+
+function toCustomerRow(
+  d: QueueDoc,
+  money: 'totalPaise' | 'quotedPaise' | null,
+): CustomerRequestRow {
+  const p = d.payload ?? {};
+
+  // An order has no top-level `name`: the product names live on each line, so
+  // fall back to the first line and then to a line count.
+  const lines = Array.isArray(p.lines) ? (p.lines as Array<Record<string, unknown>>) : [];
+  const firstLine = lines[0]?.name ? String(lines[0].name) : '';
+  const lineSummary =
+    firstLine && lines.length > 1
+      ? `${firstLine} +${lines.length - 1} more`
+      : firstLine;
+
+  const device = p.brand && p.model ? `${p.brand} ${p.model}` : '';
+  const service = p.serviceSlug ? String(p.serviceSlug).replace(/-/g, ' ') : '';
+  const address = p.address ? String(p.address) : '';
+
+  return {
+    id: d._id,
+    reference: d.reference,
+    status: d.status,
+    createdAt: d.createdAt.toISOString(),
+    amountPaise:
+      money === 'totalPaise'
+        ? (d.totalPaise ?? 0)
+        : money === 'quotedPaise'
+          ? (d.quotedPaise ?? 0)
+          : 0,
+    title: device || lineSummary || service || address || 'Request',
+  };
+}
+
+/**
+ * Everything a signed-in customer submitted, newest first.
+ *
+ * The `userId` filter is the security boundary, and it is applied inside the
+ * query itself — so one customer can never see another's orders even by
+ * guessing an id. Records placed by a guest (no `userId`) are simply not
+ * returned, because they belong to no account.
+ */
+export async function listForCustomer(
+  userId: string,
+  limit = 20,
+): Promise<{
+  orders: CustomerRequestRow[];
+  sellRequests: CustomerRequestRow[];
+  repairs: CustomerRequestRow[];
+}> {
+  const [orderDocs, sellDocs, bookingDocs] = await Promise.all([
+    (await orders())
+      .find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .toArray(),
+    (await sellRequests())
+      .find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .toArray(),
+    (await bookings())
+      .find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .toArray(),
+  ]);
+
+  return {
+    orders: orderDocs.map((d) => toCustomerRow(d, 'totalPaise')),
+    sellRequests: sellDocs.map((d) => toCustomerRow(d, 'quotedPaise')),
+    repairs: bookingDocs.map((d) => toCustomerRow(d, null)),
+  };
+}
+

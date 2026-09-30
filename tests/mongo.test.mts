@@ -1,7 +1,7 @@
 /**
- * ────────────────────────────────────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  *  MongoDB data-layer integration test
- * ────────────────────────────────────────────────────────────────────────────
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
  *  Runs the REAL data layer against a real (in-memory) MongoDB, with no HTTP
  *  server and no mocks. This is what proves the SQLite -> MongoDB migration
  *  actually works: the SQL aggregates became pipelines, the in-memory Maps are
@@ -22,7 +22,7 @@ function check(label: string, condition: boolean, detail = '') {
     console.log(`  ok   ${label}`);
   } else {
     fail += 1;
-    console.log(`  FAIL ${label}${detail ? ` — ${detail}` : ''}`);
+    console.log(`  FAIL ${label}${detail ? ` â€” ${detail}` : ''}`);
   }
 }
 
@@ -33,7 +33,7 @@ process.env.ADMIN_EMAIL = 'owner@test.local';
 process.env.ADMIN_PASSWORD = 'a-long-enough-test-password';
 process.env.ADMIN_NAME = 'Test Owner';
 
-/* ── auth + sessions ──────────────────────────────────────────────────────── */
+/* â”€â”€ auth + sessions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 console.log('\nauth + sessions');
 const { ensureAdminUser, createUser, findUserByEmail, verifyPassword, createSession, userForToken, destroySession, setUserRole, listUsers } =
   await import('../src/lib/auth.ts');
@@ -77,7 +77,7 @@ await setUserRole(customer!.id, 'customer');
 check('all users are listed', (await listUsers()).length === 2);
 
 
-/* ── catalogue overlay ────────────────────────────────────────────────────── */
+/* â”€â”€ catalogue overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 console.log('\ncatalogue overlay');
 const { ensureCatalogueSeeded, listForAdmin, createCatalogueItem, getCatalogueRow, updateCatalogueItem, deleteCatalogueItem, overlayProducts, overlayAccessories } =
   await import('../src/lib/catalogue.ts');
@@ -117,7 +117,7 @@ check('the overlay still returns the bundled phones', (await overlayProducts()).
 check('deleting the item works', (await deleteCatalogueItem(created.id)) === true);
 check('a deleted item is gone', (await getCatalogueRow(created.id)) === null);
 
-/* ── listings + the users JOIN ────────────────────────────────────────────── */
+/* â”€â”€ listings + the users JOIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 console.log('\nlistings');
 const { createListing, listForUser, getOwned, listAll, updateListing, setListingStatus, deleteListing } =
   await import('../src/lib/listings.ts');
@@ -144,7 +144,7 @@ check('the admin list joins the owner email', all.items[0].ownerEmail === 'custo
 check('the admin list joins the owner name', all.items[0].ownerName === 'Casey Customer');
 
 
-/* ── orders, bookings, enquiries ──────────────────────────────────────────── */
+/* â”€â”€ orders, bookings, enquiries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 console.log('\norders, bookings, enquiries');
 const repo = await import('../src/services/repository.ts');
 const { adminStats, listQueue, setQueueStatus, listUsersWithCounts } = await import('../src/lib/adminService.ts');
@@ -205,7 +205,7 @@ const inquiry = await repo.createContactInquiry({
 });
 check('an enquiry is created', Boolean(inquiry.id));
 
-/* ── admin aggregation (SQL -> aggregation pipeline) ──────────────────────── */
+/* â”€â”€ admin aggregation (SQL -> aggregation pipeline) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 console.log('\nadmin aggregation');
 const stats = await adminStats();
 check('customer count is right', stats.customers === 1, `got ${stats.customers}`);
@@ -236,11 +236,83 @@ check('the user/listing join counts the listing', casey?.listingCount === 1, `go
 check('the join still returns the admin', usersWithCounts.some((u) => u.role === 'admin'));
 
 
-/* ── authorisation boundary ───────────────────────────────────────────────── */
+/* â”€â”€ authorisation boundary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 console.log('\nauthorisation');
 const { isAdmin } = await import('../src/lib/guards.ts');
 check('isAdmin accepts an admin', isAdmin({ id: 'a', email: 'a@t.co', name: 'A', phone: null, role: 'admin', createdAt: '' }));
 check('isAdmin rejects a customer', !isAdmin({ id: 'c', email: 'c@t.co', name: 'C', phone: null, role: 'customer', createdAt: '' }));
+
+/* ── Customer account scoping ────────────────────────────────────────────── */
+console.log('\ncustomer account scoping');
+
+check('a self-registered account is a customer, never an admin', customer!.role === 'customer');
+
+// A second customer, so we can prove one never sees the other's records.
+const other = await createUser({
+  email: 'other@test.local',
+  password: 'other-password',
+  name: 'Other Person',
+});
+
+const orderA = await repo.createOrder({
+  fullName: 'Casey Customer', phone: '9716216480', email: 'customer@test.local',
+  addressLine: '12 MG Road', area: 'Indore', city: 'Indore', state: 'MP',
+  pincode: '452001', deliveryMethod: 'standard',
+  lines: [{ productId: 'p-iphone-15-pro', variantKey: 'default|128 GB|8 GB', quantity: 1 }],
+}, customer!.id);
+const orderB = await repo.createOrder({
+  fullName: 'Other Person', phone: '9716216480', email: 'other@test.local',
+  addressLine: '9 Station Road', area: 'Bhopal', city: 'Bhopal', state: 'MP',
+  pincode: '462001', deliveryMethod: 'standard',
+  lines: [{ productId: 'p-iphone-15-pro', variantKey: 'default|128 GB|8 GB', quantity: 1 }],
+}, other!.id);
+
+const sellA = await repo.createSellPhoneRequest({
+  brand: 'OnePlus', model: '12', storage: '256 GB', condition: 'Good',
+  screen: 'Cracked', battery: 'Good', body: 'Scratches', accessories: ['Box'],
+  hasOriginalBox: true, purchaseAge: '1 year', customerName: 'Casey Customer',
+  customerPhone: '9716216480', customerEmail: 'customer@test.local',
+  address: '12 MG Road', pickupDate: '2026-10-02', pickupTime: '11:00', imageCount: 2,
+}, customer!.id);
+
+const bookingA = await repo.createRepairBooking({
+  name: 'Casey Customer', phone: '9716216480', brand: 'OnePlus', model: '12',
+  problem: 'Screen cracked', preferredDate: '2026-10-01',
+  preferredTime: '10:00', dropoff: 'walk-in',
+}, customer!.id);
+
+const myAccount = await repo.listForCustomer(customer!.id);
+check('my orders includes my own order', myAccount.orders.some((o) => o.reference === orderA.orderNumber));
+check("my orders excludes another customer's order", !myAccount.orders.some((o) => o.reference === orderB.orderNumber));
+check('my sell requests includes my request', myAccount.sellRequests.some((s) => s.reference === sellA.reference));
+check('my sell request shows the quoted value', myAccount.sellRequests.find((s) => s.reference === sellA.reference)?.amountPaise === sellA.estimatedValuePaise);
+check('my repairs includes my booking', myAccount.repairs.some((r) => r.reference === bookingA.reference));
+check('a repair row carries no amount', myAccount.repairs[0]?.amountPaise === 0);
+check('an order row has a readable title', myAccount.orders[0]?.title.includes('iPhone') === true);
+
+const theirs = await repo.listForCustomer(other!.id);
+check("another customer sees only their own order", theirs.orders.length === 1 && theirs.orders[0].reference === orderB.orderNumber);
+check('another customer sees none of my sell requests', theirs.sellRequests.length === 0);
+check('another customer sees none of my repairs', theirs.repairs.length === 0);
+
+// A guest checkout still works; it simply belongs to no account.
+const guestOrder = await repo.createOrder({
+  fullName: 'Guest Buyer', phone: '9000000000', email: 'guest@test.local',
+  addressLine: '3 Somewhere', area: 'Pune', city: 'Pune', state: 'MH',
+  pincode: '411001', deliveryMethod: 'standard',
+  lines: [{ productId: 'p-iphone-15-pro', variantKey: 'default|128 GB|8 GB', quantity: 1 }],
+});
+check('a guest order is still created', Boolean(guestOrder.orderNumber));
+const afterGuest = await repo.listForCustomer(customer!.id);
+check('a guest order is not attributed to any account', !afterGuest.orders.some((o) => o.reference === guestOrder.orderNumber));
+
+// The admin queue is unscoped, so an admin still sees everything, including
+// guest orders that no customer can see.
+const adminOrders = await listQueue('orders', 1, 50);
+check('the admin queue still sees guest orders', adminOrders.items.some((o) => o.reference === guestOrder.orderNumber));
+check('the admin queue still sees every customer order', adminOrders.total >= 3);
+
+
 check('isAdmin rejects null', !isAdmin(null));
 
 console.log(`\n${'='.repeat(56)}\npassed: ${pass}   failed: ${fail}\n${'='.repeat(56)}`);
@@ -248,8 +320,3 @@ console.log(`\n${'='.repeat(56)}\npassed: ${pass}   failed: ${fail}\n${'='.repea
 await mongod.stop();
 process.exit(fail === 0 ? 0 : 1);
 
-const renamed = await updateListing(customer!.id, l1.id, { title: 'Blue OnePlus 12' });
-check('an owner can update their listing', renamed?.title === 'Blue OnePlus 12');
-check('status can be set by an admin', (await setListingStatus(l1.id, 'sold')) === true);
-check('a foreign id is not deleted', (await deleteListing(admin!.id, l1.id)) === false);
-check('the owner can delete it', (await deleteListing(customer!.id, l1.id)) === true);

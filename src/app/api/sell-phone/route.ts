@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { sellPhoneSchema, fieldErrors } from '@/lib/validation';
 import { createSellPhoneRequest } from '@/services/repository';
 import { siteConfig } from '@/lib/config';
+import { apiUser } from '@/lib/guards';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -29,8 +30,10 @@ export async function POST(request: Request) {
   }
 
   // `estimatedValuePaise` arrives from the client for optimistic UI, but the
-  // repository ignores it and derives its own figure.
-  const record = await createSellPhoneRequest(parsed.data);
+  // repository ignores it and derives its own figure. Guests can send a phone
+  // in too; the account is stamped only when someone is signed in.
+  const user = await apiUser();
+  const record = await createSellPhoneRequest(parsed.data, user?.id ?? null);
 
   return NextResponse.json(
     {

@@ -167,6 +167,15 @@ export interface QueueDoc {
   payload: Record<string, unknown>;
   totalPaise?: number;
   quotedPaise?: number;
+  /**
+   * The account that submitted this, when they were signed in.
+   *
+   * Nullable on purpose: orders, bookings and trade-in requests can all be
+   * placed by a guest, and a guest checkout must keep working. It is what makes
+   * "My orders" possible for a signed-in customer without ever exposing another
+   * customer's records.
+   */
+  userId?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -234,6 +243,8 @@ async function ensureIndexes(db: Db): Promise<void> {
     ...(['orders', 'bookings', 'sellRequests', 'inquiries'] as const).map((name) =>
       db.collection(name).createIndexes([
         { key: { reference: 1 }, name: 'reference' },
+        // Backs "My orders" / "My sell requests" / "My repair requests".
+        { key: { userId: 1, createdAt: -1 }, name: 'userId_createdAt' },
         { key: { createdAt: -1 }, name: 'createdAt_desc' },
         { key: { status: 1 }, name: 'status' },
       ]),

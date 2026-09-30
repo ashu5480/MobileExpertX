@@ -18,7 +18,7 @@ type Mode = 'login' | 'register';
 const COPY = {
   login: {
     title: 'Welcome back',
-    subtitle: 'Sign in to manage your items and orders.',
+    subtitle: 'Sign in to track your orders, sell requests and repairs.',
     cta: 'Sign in',
     busy: 'Signing in…',
     switchTo: 'register' as Mode,
@@ -26,7 +26,7 @@ const COPY = {
   },
   register: {
     title: 'Create your account',
-    subtitle: 'List an item you want to sell, and track it in one place.',
+    subtitle: 'Track your orders, sell requests and repairs in one place.',
     cta: 'Create account',
     busy: 'Creating account…',
     switchTo: 'login' as Mode,
@@ -70,7 +70,12 @@ export function AuthForm({ initialMode = 'login' }: { initialMode?: Mode }) {
       // Only same-origin, absolute-path redirects are honoured.
       const raw = params.get('next');
       const next = raw && raw.startsWith('/') && !raw.startsWith('//') ? raw : null;
-      router.replace(next ?? (data.user?.role === 'admin' ? '/admin' : '/account'));
+
+      // An admin belongs in the admin panel. A customer goes back to where they
+      // came from, or to the storefront — never into a seller/listing flow,
+      // which this business no longer exposes to customers.
+      const fallback = data.user?.role === 'admin' ? '/admin' : '/';
+      router.replace(next ?? fallback);
       router.refresh();
     } catch {
       setError('Network problem. Please check your connection and try again.');

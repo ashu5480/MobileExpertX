@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createOrderSchema, fieldErrors } from '@/lib/validation';
 import { createOrder, getOrderByNumber } from '@/services/repository';
 import { publicConfigFor } from '@/services/paymentService';
+import { apiUser } from '@/lib/guards';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -28,7 +29,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    const order = await createOrder(parsed.data);
+    // Guests may still check out; when someone is signed in the order is
+    // stamped with their account so it appears under "My orders". Never
+    // required — a missing session is not an error here.
+    const user = await apiUser();
+    const order = await createOrder(parsed.data, user?.id ?? null);
     return NextResponse.json(
       { order, payment: publicConfigFor(order) },
       { status: 201 },

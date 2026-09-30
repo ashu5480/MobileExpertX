@@ -236,7 +236,7 @@ account — just click *"Create an account"* underneath the form.
 | Area | URL | Who |
 | --- | --- | --- |
 | Sign in / register | `/login` | anyone |
-| My items | `/account/items` | signed-in customer |
+| My account | `/account` | signed-in customer |
 | Admin panel | `/admin` | admin only |
 
 ### The admin account
@@ -271,12 +271,17 @@ Set `ADMIN_NAME` too, and it becomes the display name on the account.
 
 ### What each side can do
 
-**Customer** — sign up, then at `/account/items`:
+**Customer** — sign up at `/login`, then keep shopping. The account is a
+buyer's account, not a seller console:
 
-- add an item with a title, price, category, condition, description and up to
-  6 photos;
-- edit or delete any of their own items at any time;
-- see their items paged 10 at a time.
+- browse and buy phones and accessories;
+- send a phone in for a quote at `/sell-phone`;
+- book a repair at `/repair`;
+- see their own orders, sell requests and repair requests (and their status)
+  under `/account`.
+
+There is no customer-facing "add a product" or "list an item" flow: the
+catalogue is managed exclusively by an admin.
 
 **Admin** — at `/admin`:
 
