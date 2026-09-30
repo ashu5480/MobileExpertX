@@ -2,7 +2,7 @@
  * Sell-phone valuation, repair booking and contact API tests.
  * Run against a production build: npm run build && npm start, then npm test
  */
-const { post, assert, QUOTE_BASE, counts } = require('./helpers.cjs');
+const { post, get, assert, QUOTE_BASE, counts } = require('./helpers.cjs');
 
 (async () => {
   // ── Sell-phone quote (server-authoritative valuation) ──────────────────
@@ -29,6 +29,54 @@ const { post, assert, QUOTE_BASE, counts } = require('./helpers.cjs');
 
   assert('quote rejects invalid input',
     (await post('/api/sell-phone/quote', { brand: 'Apple' })).status === 422);
+
+  // ── Device grading (Superb / Good / Fair / Not working) ─────────────────
+  // The grade is derived from the condition answers, never accepted as input,
+  // so a tampered client cannot inflate its own quote by claiming "Superb".
+  assert('quote returns a grade', typeof q1.json?.quote?.grade?.grade === 'string',
+    `grade=${q1.json?.quote?.grade?.grade}`);
+  assert('mint phone grades superb',
+    q1.json?.quote?.grade?.grade === 'superb',
+    `got ${q1.json?.quote?.grade?.grade}`);
+  assert('grade explains itself to the customer',
+    typeof q1.json?.quote?.grade?.reason === 'string' &&
+      q1.json?.quote?.grade?.reason.length > 0);
+
+  // A perfect screen with a scuffed body must NOT reach the top band.
+  const scuffed = await post('/api/sell-phone/quote', { ...QUOTE_BASE, body: 'minor' });
+  assert('cosmetic wear drops superb to good',
+    scuffed.json?.quote?.grade?.grade === 'good',
+    `got ${scuffed.json?.quote?.grade?.grade}`);
+  assert('a lower grade is valued lower',
+    scuffed.json?.quote?.estimatedValuePaise < q1.json?.quote?.estimatedValuePaise,
+    `${q1.json?.quote?.estimatedValuePaise} -> ${scuffed.json?.quote?.estimatedValuePaise}`);
+
+  const crackedScreen = await post('/api/sell-phone/quote', { ...QUOTE_BASE, screen: 'cracked' });
+  assert('a cracked screen caps the grade below superb',
+    crackedScreen.json?.quote?.grade?.grade !== 'superb',
+    `got ${crackedScreen.json?.quote?.grade?.grade}`);
+
+  const dead = await post('/api/sell-phone/quote', {
+    ...QUOTE_BASE, condition: 'broken', screen: 'broken', battery: 'poor', body: 'damaged',
+  });
+  assert('a dead phone is graded not-working',
+    dead.json?.quote?.grade?.grade === 'non-working',
+    `got ${dead.json?.quote?.grade?.grade}`);
+
+  // A client sending a fake grade must be ignored, not trusted.
+  const spoofed = await post('/api/sell-phone/quote', { ...QUOTE_BASE, grade: 'superb' });
+  assert('a client-supplied grade is ignored',
+    spoofed.json?.quote?.grade?.grade === 'superb',
+    `got ${spoofed.json?.quote?.grade?.grade}`);
+
+  // ── Repair service catalogue (the /repair picker) ────────────────────────
+  const svc = await get('/api/repairs');
+  assert('repair services are listable', Array.isArray(svc.json?.services) && svc.json.services.length > 0,
+    `count=${svc.json?.services?.length}`);
+  assert('each service exposes price, turnaround and warranty',
+    svc.json.services.every(
+      (s) => s.startingPrice > 0 && typeof s.turnaround === 'string' && typeof s.warranty === 'string',
+    ));
 
   // ── Repair booking ─────────────────────────────────────────────────────
   const rep = await post('/api/repairs', {

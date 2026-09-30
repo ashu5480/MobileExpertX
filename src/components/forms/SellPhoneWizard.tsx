@@ -5,6 +5,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { OptionPill } from '@/components/ui/Field';
 import { Button } from '@/components/ui/Button';
 import {
+  GradeCard,
   STEPS,
   StepPanel,
   ValueCallout,
@@ -358,7 +359,14 @@ export function SellPhoneWizard({
                   value={formatPrice(quote.estimatedValuePaise)}
                   hint={`Expected range ${formatPrice(quote.lowPaise)} – ${formatPrice(quote.highPaise)}`}
                   tone="emerald"
+                  grade={quote.grade}
                 />
+              </div>
+
+              {/* Cashify shows the grade alongside the price; the customer never
+                  picks it, it falls out of the answers given in steps 3-4. */}
+              <div className="mt-4">
+                <GradeCard grade={quote.grade} />
               </div>
 
               <h3 className="mt-7 mb-3 text-[13px] font-semibold text-ink-800">

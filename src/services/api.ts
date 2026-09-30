@@ -147,6 +147,7 @@ export type RepairBookingPayload = Omit<
 >;
 
 export const repairsApi = {
+  list: () => get<{ services: import('@/types').RepairService[] }>('/api/repairs'),
   book: (payload: RepairBookingPayload) =>
     post<{ booking: import('@/types').RepairBooking; message: string }>(
       '/api/repairs',

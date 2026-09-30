@@ -1,11 +1,23 @@
 import { NextResponse } from 'next/server';
 import { repairBookingSchema, fieldErrors } from '@/lib/validation';
 import { createRepairBooking } from '@/services/repository';
+import { listRepairServices } from '@/services/catalogService';
 import { siteConfig } from '@/lib/config';
 import { apiUser } from '@/lib/guards';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+/**
+ * GET /api/repairs — the service list.
+ *
+ * Public on purpose: the repair picker on /repair needs name, starting price,
+ * turnaround and warranty for every service before anything is booked.
+ */
+export async function GET() {
+  const services = await listRepairServices();
+  return NextResponse.json({ services });
+}
 
 /** POST /api/repairs — validates and records a repair booking. */
 export async function POST(request: Request) {

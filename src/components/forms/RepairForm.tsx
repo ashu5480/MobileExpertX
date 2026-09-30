@@ -1,8 +1,8 @@
 'use client';
 
 import { m } from 'framer-motion';
-import { MessageCircle, Phone, Send } from 'lucide-react';
-import { useState } from 'react';
+import { MessageCircle, Phone, Send, ShieldCheck, Clock, IndianRupee, Check } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Field, Input, Select, Textarea } from '@/components/ui/Field';
 import { repairsApi } from '@/services/api';
@@ -29,8 +29,13 @@ const TIME_SLOTS = [
  * linked, so a customer can never submit a model that does not belong to the
  * brand they picked.
  */
-export function RepairForm({ service }: { service?: RepairService }) {
+export function RepairForm({ service: lockedService }: { service?: RepairService }) {
   const { celebrate, error: errorToast } = useToast();
+  const [services, setServices] = useState<RepairService[]>([]);
+  // When the page is entered from /repair/[slug] the service is fixed. On the
+  // generic /repair page the customer picks it — that is the Cashify order:
+  // device → what is broken → price and turnaround → book.
+  const [pickedSlug, setPickedSlug] = useState<string>(lockedService?.slug ?? '');
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -46,6 +51,25 @@ export function RepairForm({ service }: { service?: RepairService }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [booking, setBooking] = useState<RepairBooking | null>(null);
+  /** The service in play: fixed from the URL, or the customer's own choice. */
+  const service = lockedService ?? services.find((s) => s.slug === pickedSlug);
+  // Fetched lazily so the generic /repair page can offer the picker without the
+  // server component having to thread a second prop through.
+  useEffect(() => {
+    if (lockedService || services.length) return;
+    let cancelled = false;
+    repairsApi
+      .list()
+      .then((res) => {
+        if (!cancelled) setServices(res.services);
+      })
+      .catch(() => {
+        /* Picker simply stays hidden; free-text problem field still works. */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [lockedService, services.length]);
   const set = (key: keyof typeof form, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => {
@@ -167,6 +191,75 @@ export function RepairForm({ service }: { service?: RepairService }) {
           : 'Not sure what is wrong? Book a general diagnostics appointment instead.'}
       </p>
       <div className="mt-7 space-y-5">
+        {/* ── Cashify step: what needs fixing? ──────────────────────────
+            On /repair the customer chooses the repair type first so the
+            price, turnaround and warranty are on screen *before* they type
+            anything. From /repair/[slug] the service is already fixed and
+            this block is skipped entirely. */}
+        {!lockedService && services.length > 0 && (
+          <fieldset>
+            <legend className="text-[13px] font-semibold text-ink-800">
+              What needs fixing?
+              <span className="ml-1.5 font-normal text-ink-500">
+                Pick the closest match — we confirm after inspection.
+              </span>
+            </legend>
+            <div className="mt-2.5 grid gap-2.5 sm:grid-cols-2">
+              {services.map((s) => {
+                const active = pickedSlug === s.slug;
+                return (
+                  <button
+                    key={s.slug}
+                    type="button"
+                    onClick={() => setPickedSlug(active ? '' : s.slug)}
+                    aria-pressed={active}
+                    className={cn(
+                      'relative rounded-2xl border-2 px-4 py-3.5 text-left transition-all duration-250',
+                      active
+                        ? 'border-brand-500 bg-brand-500/6 shadow-[0_0_0_3px_rgba(16,185,129,0.14)]'
+                        : 'border-surface-200 hover:border-brand-300 hover:bg-brand-500/4',
+                    )}
+                  >
+                    <span className="block text-sm font-bold text-ink-900">{s.name}</span>
+                    <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-500">
+                      <span className="inline-flex items-center gap-1 font-semibold text-brand-700">
+                        <IndianRupee className="h-3 w-3" aria-hidden="true" />
+                        {formatPrice(s.startingPrice)}+
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <Clock className="h-3 w-3" aria-hidden="true" />
+                        {s.turnaround}
+                      </span>
+                    </span>
+                    {active && (
+                      <Check
+                        className="absolute right-3 top-3 h-4 w-4 text-brand-500"
+                        aria-hidden="true"
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            {/* The warranty is the reason customers pick us over a local shop —
+                surface it the moment a service is chosen. */}
+            {service && (
+              <div className="mt-3 flex items-start gap-2.5 rounded-2xl border border-emerald-500/25 bg-emerald-500/6 p-4">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
+                <div>
+                  <p className="text-sm font-semibold text-ink-900">
+                    {service.warranty} included
+                  </p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-ink-600">
+                    Starting at {formatPrice(service.startingPrice)}, ready in {service.turnaround}.{' '}
+                    {service.includes.join(' · ')}.
+                  </p>
+                </div>
+              </div>
+            )}
+          </fieldset>
+        )}
+
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Your name" htmlFor="name" error={errors.name} required>
             <Input

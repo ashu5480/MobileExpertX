@@ -342,6 +342,8 @@ export interface SellQuote {
   lowPaise: number;
   highPaise: number;
   breakdown: Array<{ label: string; factor: number }>;
+  /** The grade derived from the customer's condition answers. */
+  grade: GradeResult;
 }
 
 const storageFactor = (storage: string): number => {
@@ -357,6 +359,129 @@ const storageFactor = (storage: string): number => {
 };
 
 /** Applies every multiplier in sequence and returns a transparent breakdown. */
+/**
+ * ────────────────────────────────────────────────────────────────────────────
+ *  Device grading (Superb / Good / Fair)
+ * ────────────────────────────────────────────────────────────────────────────
+ *  Cashify does not ask "what grade is your phone?" — it derives the grade from
+ *  the condition answers it already collects, then shows it alongside the price.
+ *  We do exactly the same, so the customer answers concrete questions (screen,
+ *  battery, body) and sees a grade fall out of them.
+ *
+ *  A device that does not power on is never graded: it is quoted on its own
+ *  terms rather than being forced into a working-device tier.
+ */
+
+export type DeviceGrade = 'superb' | 'good' | 'fair' | 'non-working';
+
+export interface GradeResult {
+  grade: DeviceGrade;
+  label: string;
+  /** One line explaining WHY this grade — shown to the customer. */
+  reason: string;
+  /** Multiplier applied to the base value, before any other factor. */
+  factor: number;
+}
+
+export const GRADE_COPY: Record<DeviceGrade, { label: string; blurb: string; factor: number }> = {
+  superb: {
+    label: 'Superb',
+    blurb: 'Near-mint. Barely any signs of use, everything working perfectly.',
+    factor: 1,
+  },
+  good: {
+    label: 'Good',
+    blurb: 'Light signs of use. Fully working with no functional problems.',
+    factor: 0.82,
+  },
+  fair: {
+    label: 'Fair',
+    blurb: 'Visible wear or a damaged part. Works, but it shows.',
+    factor: 0.62,
+  },
+  'non-working': {
+    label: 'Not working',
+    blurb: 'Does not power on or has a serious fault. Quoted as spares.',
+    factor: 0.28,
+  },
+};
+
+/** Scored 0–10 across the three physical conditions, then bucketed. */
+export function gradeDevice(input: {
+  condition: string;
+  screen: string;
+  battery: string;
+  body: string;
+}): GradeResult {
+  // A dead device short-circuits: no amount of cosmetic quality changes that.
+  if (input.condition === 'broken') {
+    return {
+      grade: 'non-working',
+      ...GRADE_COPY['non-working'],
+      reason: 'You told us the phone does not work properly.',
+    };
+  }
+
+  let score = 0;
+  const reasons: string[] = [];
+
+  // Screen: the single biggest driver. Cracked or dead caps the grade at Fair.
+  if (input.screen === 'perfect') score += 4;
+  else if (input.screen === 'minor') {
+    score += 2.5;
+    reasons.push('the screen has minor marks');
+  } else if (input.screen === 'cracked') {
+    score += 0.5;
+    reasons.push('the screen is cracked');
+  } else {
+    score += 0;
+    reasons.push('the screen is not working');
+  }
+
+  if (input.battery === 'new') score += 3;
+  else if (input.battery === 'healthy') score += 2.5;
+  else if (input.battery === 'worn') {
+    score += 1.5;
+    reasons.push('the battery is worn');
+  } else {
+    score += 0.5;
+    reasons.push('the battery is poor');
+  }
+
+  if (input.body === 'pristine') score += 3;
+  else if (input.body === 'minor') {
+    score += 2;
+    reasons.push('the body has minor scuffs');
+  } else {
+    score += 0.5;
+    reasons.push('the body is damaged');
+  }
+
+  // Threshold is 9, not 8: a phone with a perfect screen and healthy battery
+  // but *any* cosmetic wear on the body must land in "Good". "Superb" is meant
+  // to read as near-mint, and it is the top price band — we do not hand it out
+  // for a scuffed frame.
+  let grade: DeviceGrade;
+  if (score >= 9) grade = 'superb';
+  else if (score >= 5) grade = 'good';
+  else grade = 'fair';
+
+  // A cracked screen can never be sold as "Superb" — it is a functional defect,
+  // not a cosmetic one. This mirrors how Cashify separates condition grades
+  // from functional ones.
+  if (input.screen === 'cracked' || input.screen === 'broken') {
+    if (grade === 'superb') grade = 'good';
+    if (grade === 'good' && input.screen === 'broken') grade = 'fair';
+  }
+
+  const copy = GRADE_COPY[grade];
+  const reason = reasons.length
+    ? `Based on your answers — ${reasons.join(', ')}.`
+    : 'Everything checks out: perfect screen, healthy battery, pristine body.';
+
+  return { grade, label: copy.label, reason, factor: copy.factor };
+}
+
 export function estimateResaleValue(input: SellQuoteInput): SellQuote {
   const breakdown: Array<{ label: string; factor: number }> = [];
   let value = input.baseValuePaise;
@@ -365,6 +490,12 @@ export function estimateResaleValue(input: SellQuoteInput): SellQuote {
     value *= factor;
     breakdown.push({ label, factor });
   };
+
+  // The grade is derived, not asked — see `gradeDevice`. It leads the
+  // breakdown because it is the biggest single lever on the final price and
+  // the thing the customer is actually shown.
+  const grade = gradeDevice(input);
+  if (grade.factor !== 1) apply(`Grade: ${grade.label}`, grade.factor);
 
   apply('Storage', storageFactor(input.storage));
   apply('Overall condition', CONDITION_FACTOR[input.condition] ?? 0.85);
@@ -384,6 +515,7 @@ export function estimateResaleValue(input: SellQuoteInput): SellQuote {
     lowPaise: Math.max(50000, Math.round((estimatedValuePaise * 0.93) / 10000) * 10000),
     highPaise: Math.round((estimatedValuePaise * 1.07) / 10000) * 10000,
     breakdown,
+    grade,
   };
 }
 

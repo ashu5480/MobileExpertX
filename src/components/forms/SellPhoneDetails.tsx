@@ -5,7 +5,7 @@ import { ArrowLeft, Building2, CheckCircle2, MessageCircle, Phone, ShieldCheck }
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Field, Input, Select, Textarea, OptionPill } from '@/components/ui/Field';
-import { WizardProgress, type WizardState } from './SellPhoneParts';
+import { WizardProgress, GradeBadge, type WizardState } from './SellPhoneParts';
 import { pickupTimeSlots } from '@/data/sellPhone';
 import { sellPhoneApi } from '@/services/api';
 import { sellPhoneSchema, type SellPhoneInput } from '@/lib/validation';
@@ -16,7 +16,7 @@ import {
   siteConfig,
   whatsappMessages,
 } from '@/lib/config';
-import { formatPrice, todayISO } from '@/lib/utils';
+import { formatPrice, todayISO, formatDate } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import type { SellQuote } from '@/lib/pricing';
 interface Props {
@@ -154,6 +154,35 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
         <p className="mt-4 inline-flex rounded-full bg-surface-100 px-3.5 py-1.5 font-mono text-sm font-semibold text-ink-800">
           {done.reference}
         </p>
+
+        {/* Cashify's promise, stated plainly: the money changes hands at the
+            door once the device matches the quote. Saying this up front is the
+            single biggest driver of trust in a doorstep-purchase flow. */}
+        <div className="mt-7 rounded-2xl border border-brand-500/20 bg-brand-500/5 p-5 text-left">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-brand-600">
+            What happens next
+          </p>
+          <ol className="mt-3 space-y-3">
+            {[
+              `We arrive at your door on ${formatDate(form.pickupDate)}, ${form.pickupTime}.`,
+              'We inspect the phone. If it matches your answers, we confirm the quote.',
+              'You are paid on the spot — cash, UPI or bank transfer, your choice.',
+            ].map((line, i) => (
+              <li key={line} className="flex gap-3">
+                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-500 text-[11px] font-bold text-white">
+                  {i + 1}
+                </span>
+                <span className="text-sm leading-relaxed text-ink-700">{line}</span>
+              </li>
+            ))}
+          </ol>
+          <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-brand-500/20 pt-4">
+            <GradeBadge grade={quote.grade.grade} size="sm" />
+            <span className="text-xs text-ink-600">
+              {state.brand} {state.model} · {state.storage}
+            </span>
+          </div>
+        </div>
         <div className="mt-7 grid gap-2.5 sm:grid-cols-2">
           <a
             href={buildWhatsAppUrl(
@@ -332,10 +361,12 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
                 <p className="mt-1 text-2xl font-extrabold text-brand-700">
                   {formatPrice(quote.estimatedValuePaise)}
                 </p>
-                <p className="mt-2 text-xs text-ink-600">
-                  {state.brand} {state.model} · {state.storage} ·{' '}
-                  {state.condition.replace('-', ' ')}
-                </p>
+                <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                  <GradeBadge grade={quote.grade.grade} size="sm" />
+                  <p className="text-xs text-ink-600">
+                    {state.brand} {state.model} · {state.storage}
+                  </p>
+                </div>
               </div>
             </div>
             <div className="mt-8 flex flex-col gap-3">
@@ -355,7 +386,9 @@ export function SellPhoneDetails({ state, quote, imageCount, onBack }: Props) {
             </div>
             <p className="mt-5 flex items-start gap-2 text-xs leading-relaxed text-ink-500">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" aria-hidden="true" />
-              We factory-reset and data-wipe every device on receipt. You can watch us do it.
+              Free doorstep pickup. We factory-reset and data-wipe every device on receipt
+              so your data is gone before it is resold — you can watch us do it. Payment is
+              made on the spot once the inspection matches this quote.
             </p>
             <div className="mt-5 border-t border-surface-200 pt-5">
               <p className="text-xs font-semibold text-ink-600">Prefer to talk?</p>

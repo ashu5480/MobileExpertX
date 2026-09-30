@@ -6,13 +6,13 @@ import { SectionHeading } from '@/components/ui/SectionHeading';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { breadcrumbSchema, buildMetadata, faqSchema } from '@/lib/seo';
 import { faqs } from '@/data/store';
-import { sellBrands } from '@/data/sellPhone';
+import { sellBrands, sellPhases } from '@/data/sellPhone';
 import { formatPrice } from '@/lib/utils';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Sell Your Old Phone — Instant Resale Value',
   description:
-    'Turn your old phone into cash. Answer eight quick questions for an instant, honest valuation, then get a free in-person inspection and same-day payment.',
+    'Turn your old phone into cash in three steps. Answer a few quick questions for an instant valuation and a Superb/Good/Fair grade, then book a free doorstep pickup and get paid at your door.',
   path: '/sell-phone',
   keywords: [
     'sell old phone',
@@ -55,8 +55,9 @@ export default function SellPhonePage() {
               Turn your old phone into cash.
             </h1>
             <p className="mt-5 text-base leading-relaxed text-ink-600 sm:text-lg">
-              Eight quick questions, an instant honest valuation, and cash in hand the
-              same day. No lowball offers, and we never reduce a confirmed quote.
+              Three simple steps: tell us about your phone, see your price and the grade
+              we would give it, then book a free pickup and get paid at your door. No
+              lowball offers, and we never reduce a confirmed quote.
             </p>
           </div>
         </div>
@@ -72,40 +73,31 @@ export default function SellPhonePage() {
             <aside className="space-y-4 lg:sticky lg:top-28 lg:self-start">
               <div className="rounded-3xl border border-surface-200 bg-white p-6 shadow-soft">
                 <h2 className="text-sm font-bold text-ink-900">How it works</h2>
+                <p className="mt-1 text-xs text-ink-500">
+                  Three steps, about two minutes, cash in hand.
+                </p>
                 <ol className="mt-4 space-y-4">
-                  {[
-                    {
-                      title: 'Answer 8 questions',
-                      body: 'Brand, model, condition, screen, battery, body, accessories and age.',
-                    },
-                    {
-                      title: 'See your value instantly',
-                      body: 'We apply our live market model — the same number we use at the counter.',
-                    },
-                    {
-                      title: 'Free inspection',
-                      body: 'Bring it in or share photos. We confirm the quote in about 15 minutes.',
-                    },
-                    {
-                      title: 'Paid the same day',
-                      body: 'Cash or UPI, with the data wipe and reset done in front of you.',
-                    },
-                  ].map((item, i) => (
-                    <li key={item.title} className="flex gap-3">
+                  {sellPhases.map((phase, i) => (
+                    <li key={phase.id} className="flex gap-3">
                       <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand-gradient text-xs font-bold text-white">
                         {i + 1}
                       </span>
                       <span>
                         <span className="block text-sm font-semibold text-ink-900">
-                          {item.title}
+                          {phase.title}
                         </span>
                         <span className="mt-0.5 block text-xs leading-relaxed text-ink-600">
-                          {item.body}
+                          {phase.blurb}
                         </span>
                       </span>
                     </li>
                   ))}
                 </ol>
+                <p className="mt-4 border-t border-surface-200 pt-4 text-xs leading-relaxed text-ink-600">
+                  Pickup is free, and the quote you see is the quote we honour once the
+                  phone matches your description. You are paid at the door — cash, UPI or
+                  bank transfer.
+                </p>
               </div>
 
               <div className="rounded-3xl border border-brand-500/20 bg-brand-500/5 p-6">

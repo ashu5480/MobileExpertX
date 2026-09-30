@@ -201,6 +201,30 @@ export const sellAccessoryOptions = [
   'Warranty card',
 ];
 
+/**
+ * The three-phase shape of the sell journey, matching how the process is
+ * explained on the page: describe the phone → see price and grade → book the
+ * free pickup. Lives here rather than next to the wizard because `/sell-phone`
+ * renders it from a server component.
+ */
+export const sellPhases = [
+  {
+    id: 1,
+    title: 'Tell us about your phone',
+    blurb: 'Brand, model and condition — it takes about a minute.',
+  },
+  {
+    id: 2,
+    title: 'See your price',
+    blurb: 'An instant valuation with the grade we would assign it.',
+  },
+  {
+    id: 3,
+    title: 'Book your free pickup',
+    blurb: 'Pick a slot and get paid at your door.',
+  },
+] as const;
+
 export const sellPurchaseAges = [
   { value: '0-6', label: 'Under 6 months' },
   { value: '6-12', label: '6 – 12 months' },
