@@ -73,7 +73,7 @@ export function SellPhoneSection() {
                   )}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex h-13 items-center gap-2 rounded-xl border border-surface-300 bg-white px-6 text-[15px] font-semibold text-ink-900 shadow-soft transition-colors hover:border-[#25D366]/50 hover:text-[#128C4B]"
+                  className="inline-flex h-[52px] items-center gap-2 rounded-xl border border-surface-300 bg-white px-6 text-[15px] font-semibold text-ink-900 shadow-soft transition-colors hover:border-[#25D366]/50 hover:text-[#128C4B]"
                 >
                   <MessageCircle className="h-4 w-4" aria-hidden="true" />
                   Sell on WhatsApp

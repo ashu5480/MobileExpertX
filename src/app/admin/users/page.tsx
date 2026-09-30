@@ -25,7 +25,41 @@ export default async function AdminUsersPage() {
           No accounts yet.
         </p>
       ) : (
-        <div className="mt-6 overflow-x-auto rounded-2xl border border-surface-200 bg-white shadow-soft">
+        <>
+          {/* Mobile: a stacked card per user. A five-column table cannot fit a
+              320px screen without a horizontal scroll, which hides the role
+              control off-screen — the one thing an admin came here to change. */}
+          <ul className="mt-6 space-y-3 lg:hidden">
+          {users.map((u) => (
+            <li
+              key={String(u.id)}
+              className="rounded-2xl border border-surface-200 bg-white p-4 shadow-soft"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-ink-900">{String(u.name)}</p>
+                  <p className="truncate text-sm text-ink-700">{String(u.email)}</p>
+                </div>
+                <span className="shrink-0 rounded-full bg-surface-100 px-2.5 py-1 text-[11px] font-semibold text-ink-700">
+                  {u.listingCount ?? 0} items
+                </span>
+              </div>
+              {u.phone ? (
+                <p className="mt-1 truncate text-sm text-ink-600">{String(u.phone)}</p>
+              ) : null}
+              <div className="mt-3 border-t border-surface-100 pt-3">
+                <RoleControl
+                  userId={String(u.id)}
+                  role={String(u.role)}
+                  self={String(u.id) === me.id}
+                />
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        {/* Desktop: the full table. */}
+        <div className="mt-6 hidden overflow-x-auto rounded-2xl border border-surface-200 bg-white shadow-soft lg:block">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-surface-200 text-xs uppercase tracking-wider text-ink-500">
               <tr>
@@ -55,6 +89,7 @@ export default async function AdminUsersPage() {
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   );

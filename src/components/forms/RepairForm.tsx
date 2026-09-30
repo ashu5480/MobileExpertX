@@ -356,7 +356,7 @@ export function RepairForm({ service }: { service?: RepairService }) {
           href={buildWhatsAppUrl(siteConfig.contact.whatsapp, whatsappMessages.bookRepair(service?.name, `${form.brand} ${form.model}`))}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex h-13 items-center justify-center gap-2 rounded-xl bg-[#25D366]/10 px-5 text-sm font-semibold text-[#128C4B] transition-colors hover:bg-[#25D366]/20"
+          className="inline-flex h-[52px] items-center justify-center gap-2 rounded-xl bg-[#25D366]/10 px-5 text-sm font-semibold text-[#128C4B] transition-colors hover:bg-[#25D366]/20"
         >
           <MessageCircle className="h-4 w-4" aria-hidden="true" />
           Book on WhatsApp

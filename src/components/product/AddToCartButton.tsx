@@ -49,7 +49,7 @@ export function AddToCartButton({
       type="button"
       onClick={handle}
       disabled={disabled}
-      className="group relative flex h-13 w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-brand-gradient px-6 text-[15px] font-semibold text-white shadow-lift transition-all duration-300 hover:shadow-glow hover:brightness-105 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+      className="group relative flex h-[52px] w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-brand-gradient px-6 text-[15px] font-semibold text-white shadow-lift transition-all duration-300 hover:shadow-glow hover:brightness-105 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
     >
       <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
       <span className="relative z-10 inline-flex items-center gap-2">

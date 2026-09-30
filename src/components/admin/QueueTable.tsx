@@ -58,7 +58,54 @@ export function QueueTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-surface-200 bg-white shadow-soft">
+    <>
+      {/* Mobile: a card per row. Four columns do not fit a phone, and the
+          status dropdown is the whole point of this screen, so it must never
+          sit off-screen behind a horizontal scroll. */}
+      <ul className="space-y-3 lg:hidden">
+        {items.map((row) => {
+          const p = readPayload(row.payload);
+          const amount = row.totalPaise ?? row.quotedPaise ?? 0;
+          const who = String(p.name || p.fullName || p.customerName || '—');
+          const what = String(
+            p.brand && p.model ? `${p.brand} ${p.model}` : (p.subject || p.email || ''),
+          );
+          return (
+            <li
+              key={row.id}
+              className="rounded-2xl border border-surface-200 bg-white p-4 shadow-soft"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-mono text-xs text-ink-700">{row.reference}</p>
+                  <p className="mt-0.5 text-[11px] text-ink-400">
+                    {new Date(row.createdAt).toLocaleDateString('en-IN')}
+                  </p>
+                </div>
+                {amount > 0 ? (
+                  <p className="shrink-0 whitespace-nowrap text-sm font-semibold text-ink-800">
+                    {formatPrice(amount)}
+                  </p>
+                ) : null}
+              </div>
+              <p className="mt-2 truncate font-semibold text-ink-900">{who}</p>
+              {what ? <p className="truncate text-xs text-ink-500">{what}</p> : null}
+              <div className="mt-3">
+                <StatusSelect
+                  queue={queue}
+                  id={row.id}
+                  status={row.status}
+                  busy={busy === row.id}
+                  onChange={update}
+                />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      {/* Desktop: the full table. */}
+      <div className="hidden overflow-x-auto rounded-2xl border border-surface-200 bg-white shadow-soft lg:block">
       <table className="w-full text-left text-sm">
         <thead className="border-b border-surface-200 text-xs uppercase tracking-wider text-ink-500">
           <tr>
@@ -93,27 +140,60 @@ export function QueueTable({
                   {amount > 0 ? formatPrice(amount) : '—'}
                 </td>
                 <td className="px-4 py-3">
-                  <select
-                    value={row.status}
-                    disabled={busy === row.id}
-                    onChange={(e) => update(row.id, e.target.value)}
-                    aria-label={`Status for ${row.reference}`}
-                    className={`rounded-lg border px-2.5 py-1.5 text-xs font-semibold outline-none ${
-                      STATUS_STYLES[row.status] ?? 'border-surface-300 bg-white text-ink-700'
-                    }`}
-                  >
-                    {QUEUE_STATUSES[queue].map((s) => (
-                      <option key={s} value={s}>
-                        {s.replace('_', ' ')}
-                      </option>
-                    ))}
-                  </select>
+                  <StatusSelect
+                    queue={queue}
+                    id={row.id}
+                    status={row.status}
+                    busy={busy === row.id}
+                    onChange={update}
+                  />
                 </td>
               </tr>
             );
           })}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   );
 }
+
+/**
+ * The status dropdown, shared by the mobile card and the desktop table so the
+ * two can never drift apart in behaviour or styling.
+ *
+ * `w-full` on mobile makes it a comfortable thumb-sized control; `sm:w-auto`
+ * returns it to its natural size inside the desktop table cell.
+ */
+function StatusSelect({
+  queue,
+  id,
+  status,
+  busy,
+  onChange,
+}: {
+  queue: QueueName;
+  id: string;
+  status: string;
+  busy: boolean;
+  onChange: (id: string, status: string) => void;
+}) {
+  return (
+    <select
+      value={status}
+      disabled={busy}
+      onChange={(e) => onChange(id, e.target.value)}
+      aria-label={`Status for ${id}`}
+      className={`w-full rounded-lg border px-2.5 py-2.5 text-xs font-semibold outline-none sm:w-auto sm:py-1 ${
+        STATUS_STYLES[status] ?? 'border-surface-300 bg-white text-ink-700'
+      }`}
+    >
+      {QUEUE_STATUSES[queue].map((s) => (
+        <option key={s} value={s}>
+          {s.replace('_', ' ')}
+        </option>
+      ))}
+    </select>
+  );
+}
+

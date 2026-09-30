@@ -34,7 +34,51 @@ export default async function AdminItemsPage({
           No customer has listed anything yet.
         </p>
       ) : (
-        <div className="mt-6 overflow-x-auto rounded-2xl border border-surface-200 bg-white shadow-soft">
+        <>
+          {/* Mobile: a card per listing. The four columns (photo, seller,
+              price, status) cannot share a 320px row, and the status control
+              is the reason an admin opens this page — so it must stay visible
+              without a swipe. */}
+          <ul className="mt-6 space-y-3 lg:hidden">
+          {result.items.map((item) => (
+            <li
+              key={item.id}
+              className="rounded-2xl border border-surface-200 bg-white p-4 shadow-soft"
+            >
+              <div className="flex items-center gap-3">
+                <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-xl bg-surface-100">
+                  {item.photos[0] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={item.photos[0]} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <Package className="h-5 w-5 text-ink-300" aria-hidden="true" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold text-ink-900">{item.title}</p>
+                  <p className="line-clamp-1 text-xs text-ink-500">{item.description}</p>
+                </div>
+                <p className="shrink-0 whitespace-nowrap font-semibold text-ink-800">
+                  {formatPrice(item.pricePaise)}
+                </p>
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-3 border-t border-surface-100 pt-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-ink-800">
+                    {item.ownerName}
+                  </p>
+                  <p className="truncate text-xs text-ink-500">{item.ownerEmail}</p>
+                </div>
+                <div className="shrink-0">
+                  <ListingStatusControl id={item.id} status={item.status} />
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        {/* Desktop: the full table. */}
+        <div className="mt-6 hidden overflow-x-auto rounded-2xl border border-surface-200 bg-white shadow-soft lg:block">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-surface-200 text-xs uppercase tracking-wider text-ink-500">
               <tr>
@@ -78,6 +122,7 @@ export default async function AdminItemsPage({
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       {result.totalPages > 1 && (

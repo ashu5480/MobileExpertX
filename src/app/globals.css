@@ -44,6 +44,22 @@
     overflow-x: hidden;
   }
 
+  /* ── Narrow-screen guards ────────────────────────────────────────────────
+   * A single unbreakable string (a long URL, an email, an unbroken order
+   * reference) is the most common cause of a sideways-scrolling page on a
+   * phone, because nothing else will break it. Letting long words wrap keeps
+   * the viewport at 100% width without hiding anything.
+   *
+   * `anywhere` rather than `break-word` so it also breaks inside an otherwise
+   * unbreakable token, and the global `overflow-x: hidden` above remains the
+   * backstop for anything a future component introduces.
+   */
+  @media (max-width: 640px) {
+    p, li, dd, dt, h1, h2, h3, h4, span, td, th {
+      overflow-wrap: anywhere;
+    }
+  }
+
   h1, h2, h3, h4 {
     @apply font-display text-ink-900;
     text-wrap: balance;

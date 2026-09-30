@@ -57,7 +57,7 @@ export function ContactCTA() {
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative inline-flex h-13 items-center justify-center gap-2 overflow-hidden rounded-xl bg-[#25D366] px-7 text-[15px] font-semibold text-white shadow-[0_18px_48px_-12px_rgba(37,211,102,0.55)] transition-all duration-300 hover:brightness-105"
+                className="group relative inline-flex h-[52px] items-center justify-center gap-2 overflow-hidden rounded-xl bg-[#25D366] px-7 text-[15px] font-semibold text-white shadow-[0_18px_48px_-12px_rgba(37,211,102,0.55)] transition-all duration-300 hover:brightness-105"
               >
                 <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                 <MessageCircle className="relative z-10 h-5 w-5" aria-hidden="true" />
@@ -65,7 +65,7 @@ export function ContactCTA() {
               </a>
               <a
                 href={buildTelUrl(siteConfig.contact.phone, whatsappMessages.general())}
-                className="inline-flex h-13 items-center justify-center gap-2 rounded-xl border border-surface-300 bg-white px-7 text-[15px] font-semibold text-ink-800 shadow-soft transition-colors hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
+                className="inline-flex h-[52px] items-center justify-center gap-2 rounded-xl border border-surface-300 bg-white px-7 text-[15px] font-semibold text-ink-800 shadow-soft transition-colors hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
               >
                 <Phone className="h-5 w-5" aria-hidden="true" />
                 Call {siteConfig.contact.phoneDisplay}
