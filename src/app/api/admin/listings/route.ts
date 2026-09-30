@@ -9,7 +9,7 @@ const STATUSES = ['active', 'sold', 'hidden'];
 
 /** PATCH /api/admin/listings -- { id, status } */
 export async function PATCH(request: Request) {
-  const user = apiUser();
+  const user = await apiUser();
   if (!user) return jsonError('Please sign in.', undefined, 401);
   if (!isAdmin(user)) return jsonError('Admin access required.', undefined, 403);
 
@@ -21,7 +21,7 @@ export async function PATCH(request: Request) {
   if (!id) return jsonError('An id is required.');
   if (!STATUSES.includes(status)) return jsonError('That status is not valid.');
 
-  if (!setListingStatus(id, status)) {
+  if (!await setListingStatus(id, status)) {
     return jsonError('Item not found.', undefined, 404);
   }
   return Response.json({ ok: true });

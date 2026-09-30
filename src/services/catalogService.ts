@@ -31,10 +31,17 @@ import type {
  *  NOT reimplemented here — the server API recomputes it.
  */
 
-/** Runs an overlay read, falling back to the bundled list on any failure. */
-function safeOverlay<T>(read: () => T[], fallback: T[]): T[] {
+/**
+ * Runs an overlay read, falling back to the bundled list on any failure.
+ *
+ * Async because the overlay is a MongoDB read. Falling back is what keeps the
+ * storefront alive when the database is unreachable or `MONGODB_URI` is
+ * missing — a config mistake degrades to the bundled catalogue instead of
+ * showing an error page to every visitor.
+ */
+async function safeOverlay<T>(read: () => Promise<T[]>, fallback: T[]): Promise<T[]> {
   try {
-    const result = read();
+    const result = await read();
     return result.length ? result : fallback;
   } catch (error) {
     console.error('[catalog] overlay read failed, using bundled data:', error);
@@ -129,12 +136,7 @@ export async function listProducts(filters: ProductFilters = {}): Promise<Pagina
 
   // Seed catalogue with any admin edits (price, stock, discount, photo) layered
   // on top. Falls back to the bundled data if the catalogue cannot be read.
-  let source: Product[] = seedProducts;
-  try {
-    source = overlayProducts();
-  } catch (error) {
-    console.error('[catalog] overlay unavailable, using bundled data:', error);
-  }
+  const source = await safeOverlay(overlayProducts, seedProducts);
 
   const filtered = applyFilters(source, filters);
   const sorted = [...filtered].sort(comparators[sort] ?? comparators.featured);
@@ -156,24 +158,22 @@ export async function listProducts(filters: ProductFilters = {}): Promise<Pagina
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   const live = await tryFetch<Product | null>(`/products/${encodeURIComponent(slug)}`);
   if (live) return live;
-  return safeOverlay(() => overlayProducts(), seedProducts).find(
-    (p) => p.slug === slug,
-  ) ?? null;
+  const all = await safeOverlay(overlayProducts, seedProducts);
+  return all.find((p) => p.slug === slug) ?? null;
 }
 
 /**
  * Resolves a product by id for the cart and order engine.
  *
- * Synchronous by design: it is called from `createOrder` and from the client
- * cart resolver. The overlay is memoised per process so this stays cheap.
+ * Async because the overlay is a MongoDB read. The promise is memoised per
+ * process, so a multi-line order costs one query rather than one per line.
  */
-let phoneCache: Product[] | null = null;
-export const getProductById = (id: string): Product | null => {
-  if (!phoneCache) {
-    phoneCache = safeOverlay(() => overlayProducts(), seedProducts);
-  }
-  return phoneCache.find((p) => p.id === id) ?? null;
+let phoneCache: Promise<Product[]> | null = null;
+export function getProductById(id: string): Promise<Product | null> {
+  phoneCache ??= safeOverlay(overlayProducts, seedProducts);
+  return phoneCache.then((all) => all.find((p) => p.id === id) ?? null);
 }
+
 
 /** Full catalogue — used by the cart resolver on the client. */
 export async function getAllProducts(): Promise<Product[]> {
@@ -239,7 +239,7 @@ export async function listAccessories(
   const pageSize = filters.pageSize ?? 12;
 
   // Admin edits layered over the bundled accessories.
-  let out = safeOverlay(() => overlayAccessories(), seedAccessories);
+  let out = await safeOverlay(overlayAccessories, seedAccessories);
   if (filters.categories?.length)
     out = out.filter((a) => filters.categories!.includes(a.category));
   if (filters.brands?.length) out = out.filter((a) => filters.brands!.includes(a.brand));
@@ -281,14 +281,17 @@ export async function listAccessories(
 }
 
 export const getAllAccessories = (): Promise<AccessoryProduct[]> =>
-  Promise.resolve(safeOverlay(() => overlayAccessories(), seedAccessories));
+  safeOverlay(overlayAccessories, seedAccessories);
 
-export const getAccessoryBySlug = (slug: string): AccessoryProduct | null =>
-  safeOverlay(() => overlayAccessories(), seedAccessories).find((a) => a.slug === slug) ??
-  null;
+export const getAccessoryBySlug = (slug: string): Promise<AccessoryProduct | null> =>
+  safeOverlay(overlayAccessories, seedAccessories).then(
+    (all) => all.find((a) => a.slug === slug) ?? null,
+  );
 
-export const getAccessoryBrands = (): string[] =>
-  Array.from(new Set(safeOverlay(() => overlayAccessories(), seedAccessories).map((a) => a.brand)));
+export const getAccessoryBrands = (): Promise<string[]> =>
+  safeOverlay(overlayAccessories, seedAccessories).then((all) =>
+    Array.from(new Set(all.map((a) => a.brand))),
+  );
 
 /**
  * Drops the memoised catalogue after an admin edit.
@@ -299,6 +302,7 @@ export const getAccessoryBrands = (): string[] =>
 export function invalidateCatalogueCache(): void {
   phoneCache = null;
 }
+
 
 /* ── Repairs ────────────────────────────────────────────────────────────── */
 

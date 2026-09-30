@@ -1,5 +1,5 @@
 import 'server-only';
-import { db, id, now, rows } from '@/lib/db';
+import { id, listings as listingsCollection, now } from '@/lib/mongo';
 import { sanitizeText } from '@/lib/utils';
 import {
   LISTING_CATEGORIES,
@@ -11,7 +11,7 @@ import {
 } from '@/lib/listing-shared';
 
 /**
- * Customer listings -- the "my items" area. Server-only: it touches SQLite.
+ * Customer listings -- the "my items" area. Server-only: it queries MongoDB.
  *
  * Types and validation live in `@/lib/listing-shared` so client components
  * can import them without pulling the database into the browser bundle.
@@ -22,33 +22,33 @@ import {
 
 export { LISTING_CATEGORIES, LISTING_CONDITIONS, type Listing, type ListingInput };
 
-interface ListingRow {
-  id: string;
+/** Maps a stored document onto the public shape the UI consumes. */
+function hydrate(r: {
+  _id: string;
   userId: string;
   title: string;
   description: string;
   pricePaise: number;
   category: string;
   condition: string;
-  photos: string;
+  photos: string[];
   status: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-function safeParse(json: string): string[] {
-  try {
-    const parsed = JSON.parse(json);
-    return Array.isArray(parsed)
-      ? parsed.filter((x): x is string => typeof x === 'string')
-      : [];
-  } catch {
-    return [];
-  }
-}
-
-function hydrate(r: ListingRow): Listing {
-  return { ...r, photos: safeParse(r.photos) };
+  createdAt: Date;
+  updatedAt: Date;
+}): Listing {
+  return {
+    id: r._id,
+    userId: r.userId,
+    title: r.title,
+    description: r.description,
+    pricePaise: r.pricePaise,
+    category: r.category,
+    condition: r.condition,
+    photos: r.photos ?? [],
+    status: r.status,
+    createdAt: r.createdAt.toISOString(),
+    updatedAt: r.updatedAt.toISOString(),
+  };
 }
 
 export interface Page<T> {
@@ -61,110 +61,130 @@ export interface Page<T> {
 
 /* ── Reads ────────────────────────────────────────────────────────────────── */
 
-export function listForUser(userId: string, page = 1, pageSize = 10): Page<Listing> {
-  const total = (
-    db.prepare('SELECT COUNT(*) AS n FROM listings WHERE userId = ?').get(userId) as {
-      n: number;
-    }
-  ).n;
+export async function listForUser(
+  userId: string,
+  page = 1,
+  pageSize = 10,
+): Promise<Page<Listing>> {
+  const collection = await listingsCollection();
+  const current = Math.max(1, page);
 
-  // LIMIT/OFFSET bound the read, so "10 items" means 10 rows touched --
-  // not the whole table loaded into memory and sliced in JavaScript.
-  const data = rows<ListingRow>(
-    db
-      .prepare(
-        `SELECT * FROM listings WHERE userId = ?
-          ORDER BY createdAt DESC, id DESC
-          LIMIT ? OFFSET ?`,
-      )
-      .all(userId, pageSize, (Math.max(1, page) - 1) * pageSize),
-  );
+  // A real count, so the page count is always exactly right: 10 items shows
+  // one page, the 11th creates a second.
+  const total = await collection.countDocuments({ userId });
+
+  // skip/limit bound the read, so "10 items" means 10 documents touched.
+  const data = await collection
+    .find({ userId })
+    .sort({ createdAt: -1, _id: -1 })
+    .skip((current - 1) * pageSize)
+    .limit(pageSize)
+    .toArray();
 
   return {
     items: data.map(hydrate),
     total,
-    page: Math.max(1, page),
+    page: current,
     pageSize,
     totalPages: Math.max(1, Math.ceil(total / pageSize)),
   };
 }
 
-export function getOwned(userId: string, listingId: string): Listing | null {
-  const found = db
-    .prepare('SELECT * FROM listings WHERE id = ? AND userId = ?')
-    .get(listingId, userId) as ListingRow | undefined;
+export async function getOwned(userId: string, listingId: string): Promise<Listing | null> {
+  const found = await (await listingsCollection()).findOne({ _id: listingId, userId });
   return found ? hydrate(found) : null;
 }
 
-export function listAll(page = 1, pageSize = 20): Page<Listing & { ownerName: string; ownerEmail: string }> {
-  const total = (db.prepare('SELECT COUNT(*) AS n FROM listings').get() as { n: number }).n;
-  const data = db
-    .prepare(
-      `SELECT l.*, u.name AS ownerName, u.email AS ownerEmail
-         FROM listings l JOIN users u ON u.id = l.userId
-        ORDER BY l.createdAt DESC
-        LIMIT ? OFFSET ?`,
-    )
-    .all(pageSize, (Math.max(1, page) - 1) * pageSize) as Array<
-    ListingRow & { ownerName: string; ownerEmail: string }
-  >;
+/**
+ * Every listing from every customer, with the seller's name and email joined
+ * in. The old SQL did this with a JOIN; `$lookup` is the Mongo equivalent and
+ * keeps it to a single round trip.
+ */
+export async function listAll(
+  page = 1,
+  pageSize = 20,
+): Promise<Page<Listing & { ownerName: string; ownerEmail: string }>> {
+  const collection = await listingsCollection();
+  const current = Math.max(1, page);
+
+  const total = await collection.countDocuments({});
+
+  const data = await collection
+    .aggregate<{
+      _id: string;
+      userId: string;
+      title: string;
+      description: string;
+      pricePaise: number;
+      category: string;
+      condition: string;
+      photos: string[];
+      status: string;
+      createdAt: Date;
+      updatedAt: Date;
+      owner: Array<{ name: string; email: string }>;
+    }>([
+      { $sort: { createdAt: -1 } },
+      { $skip: (current - 1) * pageSize },
+      { $limit: pageSize },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'owner',
+          pipeline: [{ $project: { _id: 0, name: 1, email: 1 } }],
+        },
+      },
+    ])
+    .toArray();
 
   return {
-    items: data.map((r) => ({ ...hydrate(r), ownerName: r.ownerName, ownerEmail: r.ownerEmail })),
+    items: data.map((r) => ({
+      ...hydrate(r),
+      ownerName: r.owner?.[0]?.name ?? '—',
+      ownerEmail: r.owner?.[0]?.email ?? '—',
+    })),
     total,
-    page: Math.max(1, page),
+    page: current,
     pageSize,
     totalPages: Math.max(1, Math.ceil(total / pageSize)),
   };
 }
+
 
 
 /* ── Writes ───────────────────────────────────────────────────────────────── */
 
-export function createListing(userId: string, input: ListingInput): Listing {
+export async function createListing(userId: string, input: ListingInput): Promise<Listing> {
   const record = {
-    id: id('lst'),
+    _id: id('lst'),
     userId,
     title: sanitizeText(input.title).slice(0, 120),
     description: sanitizeText(input.description).slice(0, 4000),
     pricePaise: Math.max(0, Math.round(input.pricePaise)),
-    category: LISTING_CATEGORIES.includes(input.category as ListingCategory) ? input.category : 'phone',
+    category: LISTING_CATEGORIES.includes(input.category as ListingCategory)
+      ? input.category
+      : 'phone',
     condition: LISTING_CONDITIONS.includes(input.condition as ListingCondition)
       ? input.condition
       : 'used',
-    photos: JSON.stringify(input.photos.slice(0, 6)),
+    photos: (input.photos ?? []).slice(0, 6),
     status: 'active',
     createdAt: now(),
     updatedAt: now(),
   };
 
-  db.prepare(
-    `INSERT INTO listings
-       (id, userId, title, description, pricePaise, category, condition,
-        photos, status, createdAt, updatedAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-  ).run(
-    record.id,
-    record.userId,
-    record.title,
-    record.description,
-    record.pricePaise,
-    record.category,
-    record.condition,
-    record.photos,
-    record.status,
-    record.createdAt,
-    record.updatedAt,
-  );
-  return hydrate(record as ListingRow);
+  await (await listingsCollection()).insertOne(record);
+  return hydrate(record);
 }
 
-export function updateListing(
+export async function updateListing(
   userId: string,
   listingId: string,
   input: Partial<ListingInput> & { status?: string },
-): Listing | null {
-  const current = getOwned(userId, listingId);
+): Promise<Listing | null> {
+  const current = await getOwned(userId, listingId);
   if (!current) return null;
 
   const next = {
@@ -179,42 +199,30 @@ export function updateListing(
         : current.pricePaise,
     category: input.category ?? current.category,
     condition: input.condition ?? current.condition,
-    photos: JSON.stringify((input.photos ?? current.photos).slice(0, 6)),
+    photos: (input.photos ?? current.photos).slice(0, 6),
     status: input.status ?? current.status,
   };
 
-  db.prepare(
-    `UPDATE listings
-        SET title = ?, description = ?, pricePaise = ?, category = ?,
-            condition = ?, photos = ?, status = ?, updatedAt = ?
-      WHERE id = ? AND userId = ?`,
-  ).run(
-    next.title,
-    next.description,
-    next.pricePaise,
-    next.category,
-    next.condition,
-    next.photos,
-    next.status,
-    now(),
-    listingId,
-    userId,
+  // The userId stays in the filter, so this can only ever touch a row the
+  // caller owns even if the id was guessed.
+  await (await listingsCollection()).updateOne(
+    { _id: listingId, userId },
+    { $set: { ...next, updatedAt: now() } },
   );
   return getOwned(userId, listingId);
 }
 
-export function deleteListing(userId: string, listingId: string): boolean {
-  return (
-    db.prepare('DELETE FROM listings WHERE id = ? AND userId = ?').run(listingId, userId)
-      .changes > 0
-  );
+export async function deleteListing(userId: string, listingId: string): Promise<boolean> {
+  const result = await (await listingsCollection()).deleteOne({ _id: listingId, userId });
+  return result.deletedCount > 0;
 }
 
 /** Admin path -- deliberately not scoped to an owner. */
-export function setListingStatus(listingId: string, status: string): boolean {
-  return (
-    db
-      .prepare('UPDATE listings SET status = ?, updatedAt = ? WHERE id = ?')
-      .run(status, now(), listingId).changes > 0
+export async function setListingStatus(listingId: string, status: string): Promise<boolean> {
+  const result = await (await listingsCollection()).updateOne(
+    { _id: listingId },
+    { $set: { status, updatedAt: now() } },
   );
+  return result.matchedCount > 0;
 }
+

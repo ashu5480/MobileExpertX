@@ -16,8 +16,8 @@ export default async function EditListingPage({
 }: {
   params: { id: string };
 }) {
-  const user = requireUser(`/account/items/${params.id}/edit`);
-  const listing = getOwned(user.id, params.id);
+  const user = await requireUser(`/account/items/${params.id}/edit`);
+  const listing = await getOwned(user.id, params.id);
 
   // Scoped by owner, so another customer's id is a 404 rather than a 403 --
   // a 403 would confirm the row exists.

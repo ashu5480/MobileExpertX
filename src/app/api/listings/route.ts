@@ -23,13 +23,13 @@ const PAGE_SIZE = 10;
  * A customer sees only their own rows. An admin sees everything.
  */
 export async function GET(request: Request) {
-  const user = apiUser();
+  const user = await apiUser();
   if (!user) return jsonError('Please sign in.', undefined, 401);
 
   const { searchParams } = new URL(request.url);
   const page = Math.max(1, Number(searchParams.get('page') ?? '1') || 1);
 
-  return Response.json(isAdmin(user) ? listAll(page, PAGE_SIZE * 2) : listForUser(user.id, page, PAGE_SIZE));
+  return Response.json(isAdmin(user) ? await listAll(page, PAGE_SIZE * 2) : await listForUser(user.id, page, PAGE_SIZE));
 }
 
 /**
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
  * are written to disk and only the resulting public paths are stored.
  */
 export async function POST(request: Request) {
-  const user = apiUser();
+  const user = await apiUser();
   if (!user) return jsonError('Please sign in.', undefined, 401);
 
   try {
@@ -87,7 +87,7 @@ export async function POST(request: Request) {
     const problem = validateListing(input);
     if (problem) return jsonError(problem);
 
-    return Response.json({ listing: createListing(user.id, input) }, { status: 201 });
+    return Response.json({ listing: await createListing(user.id, input) }, { status: 201 });
   } catch (error) {
     if (error instanceof UploadError) return jsonError(error.message);
     console.error('[listings] create failed:', error);

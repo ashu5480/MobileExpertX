@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'A valid orderId is required.' }, { status: 422 });
   }
 
-  const order = getOrderById(parsed.data.orderId);
+  const order = await getOrderById(parsed.data.orderId);
   if (!order) {
     return NextResponse.json({ error: 'Order not found.' }, { status: 404 });
   }

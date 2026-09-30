@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const inquiry = createContactInquiry(parsed.data);
+  const inquiry = await createContactInquiry(parsed.data);
 
   return NextResponse.json(
     {

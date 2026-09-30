@@ -30,8 +30,8 @@ const NAV = [
  * non-admin request never reaches the children. Middleware also filters these
  * paths early, but this check is the actual security boundary.
  */
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const user = requireAdmin();
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const user = await requireAdmin();
 
   return (
     <div className="min-h-screen bg-surface-50">

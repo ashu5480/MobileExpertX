@@ -5,9 +5,11 @@ import { RoleControl } from '@/components/admin/RoleControl';
 export const dynamic = 'force-dynamic';
 
 /** Customer accounts, with their listing counts. */
-export default function AdminUsersPage() {
-  const me = requireAdmin();
-  const users = listUsersWithCounts();
+export default async function AdminUsersPage() {
+  // Sequential on purpose: the guard must finish before any customer data is
+  // read, not alongside it.
+  const me = await requireAdmin();
+  const users = await listUsersWithCounts();
 
   return (
     <div>

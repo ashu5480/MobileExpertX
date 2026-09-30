@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   // Seed the admin on first sign-in attempt, so a fresh install works
   // immediately instead of needing a customer to register first.
   try {
-    ensureAdminUser();
+    await ensureAdminUser();
   } catch (error) {
     console.error('[auth] admin bootstrap failed:', error);
   }
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     });
   }
 
-  const user = findUserByEmail(email);
+  const user = await findUserByEmail(email);
 
   // One message for both "no such user" and "wrong password", so the response
   // cannot be used to discover which emails are registered.
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
   if (!user) return invalid;
   if (!verifyPassword(password, user.passwordHash)) return invalid;
 
-  setSessionCookie(createSession(user.id));
+  setSessionCookie(await createSession(user.id));
 
   const { passwordHash, ...safe } = user;
   void passwordHash;

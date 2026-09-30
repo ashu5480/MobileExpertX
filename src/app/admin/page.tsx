@@ -7,11 +7,15 @@ import { QueueTable } from '@/components/admin/QueueTable';
 export const dynamic = 'force-dynamic';
 
 /** Admin home — counts plus the two queues that need action today. */
-export default function AdminDashboard() {
-  requireAdmin();
-  const stats = adminStats();
-  const sellQueue = listQueue('sellRequests', 1, 5);
-  const bookingQueue = listQueue('bookings', 1, 5);
+export default async function AdminDashboard() {
+  // The guard runs first and on its own: these counts and queues are customer
+  // data, so nothing should be read until the admin check has passed.
+  await requireAdmin();
+  const [stats, sellQueue, bookingQueue] = await Promise.all([
+    adminStats(),
+    listQueue('sellRequests', 1, 5),
+    listQueue('bookings', 1, 5),
+  ]);
 
   return (
     <div>

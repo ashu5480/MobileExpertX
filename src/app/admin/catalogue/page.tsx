@@ -10,11 +10,11 @@ export const metadata = { title: 'Catalogue', robots: { index: false, follow: fa
  * Admin catalogue: every phone and accessory, with inline price / discount /
  * stock editing.
  */
-export default function AdminCataloguePage() {
-  requireAdmin();
-  ensureCatalogueSeeded();
+export default async function AdminCataloguePage() {
+  await requireAdmin();
+  await ensureCatalogueSeeded();
 
-  const rows = listForAdmin().map((r) => ({
+  const rows = (await listForAdmin()).map((r) => ({
     id: r.id,
     kind: r.kind,
     slug: r.slug,

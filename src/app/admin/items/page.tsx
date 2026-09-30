@@ -15,10 +15,10 @@ export default async function AdminItemsPage({
 }: {
   searchParams: { page?: string };
 }) {
-  requireAdmin();
+  await requireAdmin();
 
   const page = Math.max(1, Number(searchParams.page ?? '1') || 1);
-  const result = listAll(page, PAGE_SIZE);
+  const result = await listAll(page, PAGE_SIZE);
 
   return (
     <div>

@@ -26,9 +26,9 @@ export default async function MyItemsPage({
 }: {
   searchParams: { page?: string };
 }) {
-  const user = requireUser('/account/items');
+  const user = await requireUser('/account/items');
   const page = Math.max(1, Number(searchParams.page ?? '1') || 1);
-  const result = listForUser(user.id, page, PAGE_SIZE);
+  const result = await listForUser(user.id, page, PAGE_SIZE);
 
   return (
     <main className="section bg-surface-50">

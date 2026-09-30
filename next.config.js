@@ -7,7 +7,16 @@ const nextConfig = {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [360, 414, 640, 750, 828, 1080, 1200, 1600, 1920],
     imageSizes: [64, 96, 128, 200, 256, 384],
-    remotePatterns: [],
+    // Uploaded product and listing photos live in Vercel Blob. Without this
+    // allow-list `next/image` throws at runtime on every remote URL, because
+    // the default config permits no remote hosts at all.
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.public.blob.vercel-storage.com',
+        pathname: '/**',
+      },
+    ],
   },
   experimental: {
     optimizePackageImports: ['lucide-react', 'framer-motion'],

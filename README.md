@@ -333,31 +333,42 @@ rather than at the next build.
 
 - **Passwords** are hashed with scrypt (Node built-in, memory-hard) and a
   per-user salt. Plaintext is never stored or logged.
-- **Sessions** are random 256-bit tokens stored server-side in SQLite and sent
+- **Sessions** are random 256-bit tokens stored server-side in MongoDB and sent
   as an `httpOnly` cookie. There is no JWT, so signing out genuinely revokes
-  access immediately rather than waiting for a token to expire.
+  access immediately rather than waiting for a token to expire. A TTL index
+  reaps expired sessions automatically.
 - **Self-registration can only ever create a customer.** Promotion to admin is
   a separate, authenticated action, so nobody can `POST role: "admin"`.
 - **Login and registration are rate limited** per IP.
-- **Listing access is scoped by owner** in SQL. Requesting someone else's id
-  returns 404, not 403, so the response cannot confirm it exists.
+- **Listing access is scoped by owner** in every query. Requesting someone
+  else's id returns 404, not 403, so the response cannot confirm it exists.
 - **Middleware is only a fast path.** It runs on the Edge runtime and cannot
-  open the database, so it just bounces anonymous users. The real checks are
+  reach the database, so it just bounces anonymous users. The real checks are
   `requireUser()` / `requireAdmin()` in every page and route, which query the
-  session table and verify the role on Node.
+  session collection and verify the role on Node.
+- **Uploaded files are validated by content, not by name** — the extension
+  comes from a MIME allow-list and the bytes are sniffed, so a renamed `.exe`
+  is rejected. Stored paths are re-checked against the Blob host, so a client
+  cannot point a product row at an arbitrary URL.
+
 
 ### Data storage
 
-Orders, bookings, trade-ins, enquiries, users and listings are written to
-**SQLite** using Node's built-in `node:sqlite` — no ORM, no driver, and
-**no new npm dependency**. The file lives in `./.data/` and is git-ignored.
+Orders, bookings, trade-ins, enquiries, users, listings, sessions and the
+catalogue are stored in **MongoDB** (Atlas in production) through the official
+Node driver — no ORM. `src/lib/mongo.ts` is the only module that knows about
+the connection; it caches the client on `globalThis` and creates the indexes,
+which is what makes it safe to call from concurrent serverless invocations
+instead of opening a new pool per request.
 
-Uploaded images are written to `public/uploads/` and are also git-ignored.
+Uploaded images go to **Vercel Blob** and are stored in MongoDB as permanent
+HTTPS URLs. Nothing is written to the local filesystem: on Vercel it is
+read-only and ephemeral, so a file written there would be lost on the next
+deploy and leave dead image URLs behind.
 
-> On a single server this is all you need. If you deploy to a serverless host
-> (Vercel, Lambda) the local filesystem is ephemeral — move to Postgres and an
-> object store at that point. `src/lib/db.ts` and `src/lib/upload.ts` are the
-> only two files that would change.
+> Deployed to Vercel? Set `MONGODB_URI`, `MONGODB_DB` and `BLOB_READ_WRITE_TOKEN`
+> in the project's environment variables. See `.env.example` for the full list.
+
 
 ---
 

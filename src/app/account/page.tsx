@@ -13,9 +13,9 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 /** Account overview — counts come from the customer's own rows only. */
-export default function AccountPage() {
-  const user = requireUser();
-  const { total } = listForUser(user.id, 1, 1);
+export default async function AccountPage() {
+  const user = await requireUser();
+  const { total } = await listForUser(user.id, 1, 1);
 
   return (
     <main className="section bg-surface-50">

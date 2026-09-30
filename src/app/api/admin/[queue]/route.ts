@@ -15,8 +15,8 @@ const ALLOWED: Record<QueueName, string[]> = {
   inquiries: ['new', 'replied', 'closed'],
 };
 
-function guard(): Response | null {
-  const user = apiUser();
+async function guard(): Promise<Response | null> {
+  const user = await apiUser();
   if (!user) return jsonError('Please sign in.', undefined, 401);
   // 403 here, not a redirect: this is an API, the client shows the message.
   if (!isAdmin(user)) return jsonError('Admin access required.', undefined, 403);
@@ -25,7 +25,7 @@ function guard(): Response | null {
 
 /** GET /api/admin/:queue?page=1 */
 export async function GET(request: Request, { params }: { params: { queue: string } }) {
-  const denied = guard();
+  const denied = await guard();
   if (denied) return denied;
 
   const queue = params.queue as QueueName;
@@ -33,12 +33,12 @@ export async function GET(request: Request, { params }: { params: { queue: strin
 
   const { searchParams } = new URL(request.url);
   const page = Math.max(1, Number(searchParams.get('page') ?? '1') || 1);
-  return Response.json(listQueue(queue, page, 20));
+  return Response.json(await listQueue(queue, page, 20));
 }
 
 /** PATCH /api/admin/:queue -- { id, status } */
 export async function PATCH(request: Request, { params }: { params: { queue: string } }) {
-  const denied = guard();
+  const denied = await guard();
   if (denied) return denied;
 
   const queue = params.queue as QueueName;
@@ -56,7 +56,7 @@ export async function PATCH(request: Request, { params }: { params: { queue: str
     return jsonError('That status is not valid for this queue.');
   }
 
-  if (!setQueueStatus(queue, id, status)) {
+  if (!await setQueueStatus(queue, id, status)) {
     return jsonError('Record not found.', undefined, 404);
   }
   return Response.json({ ok: true });

@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function NewListingPage() {
-  requireUser('/account/items/new');
+export default async function NewListingPage() {
+  await requireUser('/account/items/new');
 
   return (
     <main className="section bg-surface-50">

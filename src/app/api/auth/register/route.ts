@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   // Seed the admin account on first boot so a fresh install is usable.
   try {
-    ensureAdminUser();
+    await ensureAdminUser();
   } catch (error) {
     console.error('[auth] admin bootstrap failed:', error);
   }
@@ -47,13 +47,19 @@ export async function POST(request: Request) {
 
   // Self-registration can only ever create a customer. Promotion to admin is a
   // separate authenticated action, so nobody can POST their way to admin.
-  const user = createUser({ email, password, name, phone: phone || null, role: 'customer' });
+  const user = await createUser({
+    email,
+    password,
+    name,
+    phone: phone || null,
+    role: 'customer',
+  });
   if (!user) {
     return jsonError('An account with that email already exists.', {
       email: 'This email is already registered.',
     });
   }
 
-  setSessionCookie(createSession(user.id));
+  setSessionCookie(await createSession(user.id));
   return Response.json({ user }, { status: 201 });
 }

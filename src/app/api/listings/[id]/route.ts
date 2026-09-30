@@ -16,23 +16,23 @@ type Params = { params: { id: string } };
  * not a 403 -- a 403 would confirm the row exists.
  */
 export async function GET(_request: Request, { params }: Params) {
-  const user = apiUser();
+  const user = await apiUser();
   if (!user) return jsonError('Please sign in.', undefined, 401);
 
-  const listing = getOwned(user.id, params.id);
+  const listing = await getOwned(user.id, params.id);
   if (!listing) return jsonError('Item not found.', undefined, 404);
   return Response.json({ listing });
 }
 
 /** PATCH /api/listings/:id -- partial update, owner only. */
 export async function PATCH(request: Request, { params }: Params) {
-  const user = apiUser();
+  const user = await apiUser();
   if (!user) return jsonError('Please sign in.', undefined, 401);
 
   const body = await readJson(request);
   if (!body) return jsonError('Invalid request body.');
 
-  const current = getOwned(user.id, params.id);
+  const current = await getOwned(user.id, params.id);
   if (!current) return jsonError('Item not found.', undefined, 404);
 
   const photos = Array.isArray(body.photos) ? body.photos.map(String) : undefined;
@@ -52,15 +52,15 @@ export async function PATCH(request: Request, { params }: Params) {
   const problem = validateListing(next);
   if (problem) return jsonError(problem);
 
-  return Response.json({ listing: updateListing(user.id, params.id, next) });
+  return Response.json({ listing: await updateListing(user.id, params.id, next) });
 }
 
 /** DELETE /api/listings/:id -- owner only. */
 export async function DELETE(_request: Request, { params }: Params) {
-  const user = apiUser();
+  const user = await apiUser();
   if (!user) return jsonError('Please sign in.', undefined, 401);
 
-  if (!deleteListing(user.id, params.id)) {
+  if (!await deleteListing(user.id, params.id)) {
     return jsonError('Item not found.', undefined, 404);
   }
   return Response.json({ ok: true });

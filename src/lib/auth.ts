@@ -1,19 +1,25 @@
 import 'server-only';
 import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { cookies } from 'next/headers';
-import { db, id, now, row } from '@/lib/db';
+import { id, isDuplicateKey, now, sessions, users } from '@/lib/mongo';
 
 /**
  * ────────────────────────────────────────────────────────────────────────────
  *  Authentication
  * ────────────────────────────────────────────────────────────────────────────
  *  - Passwords: scrypt (Node built-in, memory-hard) with a per-user salt.
- *  - Sessions: a random 256-bit token stored in SQLite, sent as an httpOnly
+ *  - Sessions: a random 256-bit token stored in MongoDB, sent as an httpOnly
  *    cookie so client JavaScript can never read it.
  *
  *  Deliberately not a JWT: a self-signed token keeps working after you log
- *  out. A server-side row can be deleted instantly, which is what "log out"
- *  and "ban this user" both need.
+ *  out. A server-side document can be deleted instantly, which is what "log
+ *  out" and "ban this user" both need. Storing that document in MongoDB (not
+ *  SQLite on local disk, and not process memory) is what makes a session
+ *  survive a cold start and a redeploy.
+ *
+ *  Every function here is async because the database is. The hashing itself
+ *  stays synchronous — scryptSync on a 64-byte key is a few milliseconds and
+ *  blocking it does not measurably hurt a serverless invocation.
  */
 
 export const SESSION_COOKIE = 'mex_session';
@@ -49,43 +55,50 @@ export function verifyPassword(password: string, stored: string): boolean {
 
 /* ── Sessions ─────────────────────────────────────────────────────────────── */
 
-export function createSession(userId: string): string {
+export async function createSession(userId: string): Promise<string> {
   const token = randomBytes(32).toString('hex');
-  db.prepare(
-    'INSERT INTO sessions (token, userId, expiresAt, createdAt) VALUES (?, ?, ?, ?)',
-  ).run(token, userId, Date.now() + SESSION_TTL_MS, now());
+  await (await sessions()).insertOne({
+    _id: token,
+    userId,
+    expiresAt: new Date(Date.now() + SESSION_TTL_MS),
+    createdAt: now(),
+  });
   return token;
 }
 
-export function destroySession(token: string): void {
-  db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
+export async function destroySession(token: string): Promise<void> {
+  await (await sessions()).deleteOne({ _id: token });
 }
 
-export function userForToken(token: string | undefined): User | null {
+export async function userForToken(token: string | undefined): Promise<User | null> {
   if (!token) return null;
-  const found = db
-    .prepare(
-      `SELECT u.id, u.email, u.name, u.phone, u.role, u.createdAt, s.expiresAt
-         FROM sessions s JOIN users u ON u.id = s.userId
-        WHERE s.token = ?`,
-    )
-    .get(token) as Record<string, unknown> | undefined;
-  if (!found) return null;
-  if (Number(found.expiresAt) < Date.now()) {
-    destroySession(token);
+
+  const collection = await sessions();
+  const session = await collection.findOne({ _id: token });
+  if (!session) return null;
+
+  // The TTL index reaps these eventually, but checking here means an expired
+  // cookie stops authenticating the instant it lapses rather than whenever
+  // the reaper next runs.
+  if (session.expiresAt.getTime() < Date.now()) {
+    void collection.deleteOne({ _id: token });
     return null;
   }
-  return row<User>({
-    id: found.id,
+
+  const found = await (await users()).findOne({ _id: session.userId });
+  if (!found) return null;
+
+  return {
+    id: found._id,
     email: found.email,
     name: found.name,
     phone: found.phone,
     role: found.role,
-    createdAt: found.createdAt,
-  });
+    createdAt: found.createdAt.toISOString(),
+  };
 }
 
-export function currentUser(): User | null {
+export async function currentUser(): Promise<User | null> {
   return userForToken(cookies().get(SESSION_COOKIE)?.value);
 }
 
@@ -108,18 +121,18 @@ export function clearSessionCookie(): void {
 
 /* ── Users ────────────────────────────────────────────────────────────────── */
 
-export function createUser(args: {
+export async function createUser(args: {
   email: string;
   password: string;
   name: string;
   phone?: string | null;
   role?: Role;
-}): User | null {
+}): Promise<User | null> {
   const email = args.email.trim().toLowerCase();
-  if (findUserByEmail(email)) return null;
+  if (await findUserByEmail(email)) return null;
 
   const user = {
-    id: id('usr'),
+    _id: id('usr'),
     email,
     passwordHash: hashPassword(args.password),
     name: args.name.trim(),
@@ -127,43 +140,50 @@ export function createUser(args: {
     role: (args.role ?? 'customer') as Role,
     createdAt: now(),
   };
-  db.prepare(
-    `INSERT INTO users (id, email, passwordHash, name, phone, role, createdAt)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-  ).run(
-    user.id,
-    user.email,
-    user.passwordHash,
-    user.name,
-    user.phone,
-    user.role,
-    user.createdAt,
-  );
+  await (await users()).insertOne(user);
 
   const { passwordHash, ...safe } = user;
   void passwordHash;
-  return safe;
+  return {
+    id: safe._id,
+    email: safe.email,
+    name: safe.name,
+    phone: safe.phone,
+    role: safe.role,
+    createdAt: safe.createdAt.toISOString(),
+  };
 }
 
-export function findUserByEmail(email: string): (User & { passwordHash: string }) | null {
-  const found = db
-    .prepare('SELECT * FROM users WHERE email = ?')
-    .get(email.trim().toLowerCase()) as Record<string, unknown> | undefined;
-  return found ? row<User & { passwordHash: string }>(found) : null;
+export async function findUserByEmail(
+  email: string,
+): Promise<(User & { passwordHash: string }) | null> {
+  const found = await (await users()).findOne({ email: email.trim().toLowerCase() });
+  if (!found) return null;
+  return {
+    id: found._id,
+    email: found.email,
+    name: found.name,
+    phone: found.phone,
+    role: found.role,
+    createdAt: found.createdAt.toISOString(),
+    passwordHash: found.passwordHash,
+  };
 }
 
-export function listUsers(): User[] {
-  return (
-    db
-      .prepare(
-        'SELECT id, email, name, phone, role, createdAt FROM users ORDER BY createdAt DESC',
-      )
-      .all() as Array<Record<string, unknown>>
-  ).map((r) => row<User>(r));
+export async function listUsers(): Promise<User[]> {
+  const all = await (await users()).find().sort({ createdAt: -1 }).toArray();
+  return all.map((u) => ({
+    id: u._id,
+    email: u.email,
+    name: u.name,
+    phone: u.phone,
+    role: u.role,
+    createdAt: u.createdAt.toISOString(),
+  }));
 }
 
-export function setUserRole(userId: string, role: Role): void {
-  db.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, userId);
+export async function setUserRole(userId: string, role: Role): Promise<void> {
+  await (await users()).updateOne({ _id: userId }, { $set: { role } });
 }
 
 /* ── First-run admin ──────────────────────────────────────────────────────── */
@@ -175,11 +195,9 @@ export function setUserRole(userId: string, role: Role): void {
  * hardcoded default. If they are absent the site still boots, but nobody can
  * sign in as admin until they are set. That fails closed rather than open.
  */
-export function ensureAdminUser(): { created: boolean; email?: string } {
-  const existing = db
-    .prepare("SELECT COUNT(*) AS n FROM users WHERE role = 'admin'")
-    .get() as { n: number };
-  if (existing.n > 0) return { created: false };
+export async function ensureAdminUser(): Promise<{ created: boolean; email?: string }> {
+  const existing = await (await users()).countDocuments({ role: 'admin' });
+  if (existing > 0) return { created: false };
 
   const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
   const password = process.env.ADMIN_PASSWORD;
@@ -189,7 +207,7 @@ export function ensureAdminUser(): { created: boolean; email?: string } {
   }
 
   try {
-    const created = createUser({
+    const created = await createUser({
       email,
       password,
       name: process.env.ADMIN_NAME?.trim() || 'Administrator',
@@ -197,13 +215,11 @@ export function ensureAdminUser(): { created: boolean; email?: string } {
     });
     return { created: Boolean(created), email };
   } catch (error) {
-    // `next build` collects page data in parallel worker processes, so two of
-    // them can race to seed the same admin. The loser sees a UNIQUE
-    // constraint on the email -- which just means the account now exists.
-    const message = error instanceof Error ? error.message : String(error);
-    if (/UNIQUE constraint failed/i.test(message)) {
-      return { created: false, email };
-    }
+    // Two serverless invocations can race to seed the same admin on a cold
+    // start. The loser trips the unique index on email -- which just means the
+    // account now exists, so that is a success, not a failure.
+    if (isDuplicateKey(error)) return { created: false, email };
     throw error;
   }
 }
+

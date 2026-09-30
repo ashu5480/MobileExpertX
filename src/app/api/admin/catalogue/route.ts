@@ -18,22 +18,14 @@ import { jsonError, readJson } from '@/lib/api-helpers';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-function guard(): Response | null {
-  const user = apiUser();
+async function guard(): Promise<Response | null> {
+  const user = await apiUser();
   if (!user) return jsonError('Please sign in.', undefined, 401);
   if (!isAdmin(user)) return jsonError('Admin access required.', undefined, 403);
   return null;
 }
 
-/** Photos stored as a JSON array of public paths. */
-function parseImages(json: string): string[] {
-  try {
-    const parsed = JSON.parse(json);
-    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === 'string') : [];
-  } catch {
-    return [];
-  }
-}
+/** Photos are stored as a native array of public URLs on the document. */
 
 const num = (v: unknown): number => {
   const n = Number(v);
@@ -106,8 +98,8 @@ export async function GET(request: Request) {
     const kind = url.searchParams.get('kind');
     const rows =
       kind === 'phone' || kind === 'accessory'
-        ? listForAdmin(kind)
-        : listForAdmin();
+        ? await listForAdmin(kind)
+        : await listForAdmin();
 
     const items = rows
       .filter((r) => r.active === 1)
@@ -121,7 +113,7 @@ export async function GET(request: Request) {
         mrpPaise: r.mrpPaise,
         discountPercent: r.discountPercent,
         stock: r.stock,
-        images: parseImages(r.images),
+        images: r.images,
       }));
 
     return Response.json(
@@ -130,20 +122,20 @@ export async function GET(request: Request) {
     );
   }
 
-  const denied = guard();
+  const denied = await guard();
   if (denied) return denied;
 
   const id = url.searchParams.get('id');
   if (!id) return jsonError('An id is required.');
 
-  const row = getCatalogueRow(id);
+  const row = await getCatalogueRow(id);
   if (!row) return jsonError('Item not found.', undefined, 404);
   return Response.json({ item: row });
 }
 
 /** POST /api/admin/catalogue — add a phone or an accessory. */
 export async function POST(request: Request) {
-  const denied = guard();
+  const denied = await guard();
   if (denied) return denied;
 
   try {
@@ -172,7 +164,7 @@ export async function POST(request: Request) {
     const problem = validateCatalogue(input);
     if (problem) return jsonError(problem);
 
-    const item = createCatalogueItem(input);
+    const item = await createCatalogueItem(input);
     invalidateCatalogueCache();
     revalidateCatalogue([item.slug]);
     return Response.json({ item }, { status: 201 });
@@ -185,7 +177,7 @@ export async function POST(request: Request) {
 
 /** PATCH /api/admin/catalogue — update price, discount, stock, photo, etc. */
 export async function PATCH(request: Request) {
-  const denied = guard();
+  const denied = await guard();
   if (denied) return denied;
 
   const body = await readJson(request);
@@ -194,7 +186,7 @@ export async function PATCH(request: Request) {
   const id = String(body.id ?? '');
   if (!id) return jsonError('An id is required.');
 
-  const current = getCatalogueRow(id);
+  const current = await getCatalogueRow(id);
   if (!current) return jsonError('Item not found.', undefined, 404);
 
   const images = Array.isArray(body.images) ? body.images.map(String) : undefined;
@@ -226,7 +218,7 @@ export async function PATCH(request: Request) {
   });
   if (problem) return jsonError(problem);
 
-  const item = updateCatalogueItem(id, patch);
+  const item = await updateCatalogueItem(id, patch);
   invalidateCatalogueCache();
   // The slug can change when the name is edited, so refresh both the old and
   // the new address.
@@ -236,14 +228,14 @@ export async function PATCH(request: Request) {
 
 /** DELETE /api/admin/catalogue?id=… */
 export async function DELETE(request: Request) {
-  const denied = guard();
+  const denied = await guard();
   if (denied) return denied;
 
   const id = new URL(request.url).searchParams.get('id');
   if (!id) return jsonError('An id is required.');
 
-  const existing = getCatalogueRow(id);
-  if (!deleteCatalogueItem(id)) return jsonError('Item not found.', undefined, 404);
+  const existing = await getCatalogueRow(id);
+  if (!await deleteCatalogueItem(id)) return jsonError('Item not found.', undefined, 404);
 
   invalidateCatalogueCache();
   revalidateCatalogue([existing?.slug ?? '']);

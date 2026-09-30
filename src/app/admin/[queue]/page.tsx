@@ -34,13 +34,13 @@ export default async function AdminQueuePage({
   params: { queue: string };
   searchParams: { page?: string };
 }) {
-  requireAdmin();
+  await requireAdmin();
 
   const queue = params.queue as QueueName;
   if (!(queue in CONFIG)) notFound();
 
   const page = Math.max(1, Number(searchParams.page ?? '1') || 1);
-  const result = listQueue(queue, page, 20);
+  const result = await listQueue(queue, page, 20);
   const copy = CONFIG[queue];
 
   return (

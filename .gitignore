@@ -8,9 +8,20 @@
 # Production
 /build
 
-# Local env files — never commit real keys
+# Local env files — never commit real keys.
+# `.env` itself is ignored too: it was previously tracked and has been removed
+# from the index, but the ignore rule is what stops it coming back.
+.env
 .env*.local
 .env.production
+.env.production.local
+
+# Any other file holding credentials — e.g. an Atlas connection string saved
+# alongside the repo. These are untracked but MUST stay that way: a `git add .`
+# would otherwise publish a live database password.
+*-credentials.env
+*credentials*.env
+*.env.local
 
 # Debug logs
 npm-debug.log*
@@ -22,8 +33,9 @@ yarn-error.log*
 /coverage
 /tests/.tmp
 
-# Runtime data — the SQLite database and customer uploads.
-# This is real customer data: never commit it.
+# Runtime data — the legacy SQLite database and local uploads, kept only so an
+# existing local checkout is not confused by them. The app no longer reads or
+# writes either: data lives in MongoDB and images in Vercel Blob.
 /.data
 /public/uploads
 

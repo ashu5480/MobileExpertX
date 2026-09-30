@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const order = createOrder(parsed.data);
+    const order = await createOrder(parsed.data);
     return NextResponse.json(
       { order, payment: publicConfigFor(order) },
       { status: 201 },
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'A valid order number is required.' }, { status: 400 });
   }
 
-  const order = getOrderByNumber(orderNumber.toUpperCase());
+  const order = await getOrderByNumber(orderNumber.toUpperCase());
   if (!order) {
     return NextResponse.json({ error: 'We could not find that order.' }, { status: 404 });
   }

@@ -25,20 +25,11 @@ export interface AdminCatalogueRow {
   stock: number;
   active: number;
   discountPercent: number;
-  images: string;
+  images: string[];
 }
 
 /** Paise -> a plain rupee string the number input accepts. */
 export const rupees = (paise: number) => (paise / 100).toFixed(2).replace(/\.00$/, '');
-
-export function photosOf(json: string): string[] {
-  try {
-    const parsed = JSON.parse(json);
-    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === 'string') : [];
-  } catch {
-    return [];
-  }
-}
 
 type Drafts = Record<string, Partial<AdminCatalogueRow>>;
 
@@ -192,7 +183,7 @@ function CatalogueRowCard({
   const discount = draft.discountPercent ?? row.discountPercent;
   const stock = draft.stock ?? row.stock;
   const active = draft.active ?? row.active;
-  const pic = photosOf(row.images)[0];
+  const pic = row.images[0];
 
   return (
     <div className="rounded-2xl border border-surface-200 bg-white p-4 shadow-soft">

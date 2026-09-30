@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   }
 
   const token = cookies().get(SESSION_COOKIE)?.value;
-  if (token) destroySession(token);
+  if (token) await destroySession(token);
   cookies().delete(SESSION_COOKIE);
   return Response.json({ ok: true });
 }

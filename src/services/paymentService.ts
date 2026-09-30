@@ -153,7 +153,7 @@ async function createGatewayIntent(order: Order): Promise<GatewayCreateResult> {
 
     if (!res.ok) throw new Error('Could not start the payment. Please try again.');
     const data = (await res.json()) as { id: string };
-    updateOrder(order.id, { paymentReference: data.id });
+    await updateOrder(order.id, { paymentReference: data.id });
     return { gatewayReference: data.id };
   }
 
@@ -162,11 +162,11 @@ async function createGatewayIntent(order: Order): Promise<GatewayCreateResult> {
 }
 
 export async function createIntent(orderId: string) {
-  const order = getOrderById(orderId);
+  const order = await getOrderById(orderId);
   if (!order) throw new Error('Order not found.');
 
   const { gatewayReference } = await createGatewayIntent(order);
-  const updated = updateOrder(order.id, {
+  const updated = await updateOrder(order.id, {
     paymentProvider: activeProvider(),
     paymentReference: gatewayReference,
   });
@@ -192,7 +192,7 @@ export async function verify(
   paymentReference: string,
   signature?: string,
 ): Promise<VerifyResult> {
-  const order = getOrderById(orderId);
+  const order = await getOrderById(orderId);
   if (!order) return { verified: false, order: null, message: 'Order not found.' };
 
   const expected = order.totals.grandTotalPaise;
@@ -207,7 +207,7 @@ export async function verify(
 
   /* ── Mock (TEST MODE) ────────────────────────────────────────────────── */
   if (activeProvider() === 'mock') {
-    const updated = updateOrder(order.id, {
+    const updated = await updateOrder(order.id, {
       status: 'paid',
       paymentStatus: 'captured',
       paymentProvider: 'mock',
@@ -263,7 +263,7 @@ export async function verify(
       return { verified: false, order, message: 'Payment amount did not match the order total.' };
     }
 
-    const updated = updateOrder(order.id, {
+    const updated = await updateOrder(order.id, {
       status: 'paid',
       paymentStatus: 'captured',
       paymentProvider: 'razorpay',
@@ -291,7 +291,7 @@ export async function verify(
     return { verified: false, order, message: 'Payment amount did not match the order total.' };
   }
 
-  const updated = updateOrder(order.id, {
+  const updated = await updateOrder(order.id, {
     status: 'paid',
     paymentStatus: 'captured',
     paymentProvider: 'stripe',

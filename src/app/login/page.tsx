@@ -21,14 +21,14 @@ export const metadata: Metadata = buildMetadata({
  * Already-signed-in users are redirected, so the form is never shown to
  * someone who does not need it.
  */
-export default function LoginPage() {
+export default async function LoginPage() {
   try {
-    ensureAdminUser();
+    await ensureAdminUser();
   } catch (error) {
     console.error('[auth] admin bootstrap failed:', error);
   }
 
-  const user = currentUser();
+  const user = await currentUser();
   if (user) redirect(user.role === 'admin' ? '/admin' : '/account');
 
   return (

@@ -30,7 +30,7 @@ export async function POST(request: Request) {
 
   // `estimatedValuePaise` arrives from the client for optimistic UI, but the
   // repository ignores it and derives its own figure.
-  const record = createSellPhoneRequest(parsed.data);
+  const record = await createSellPhoneRequest(parsed.data);
 
   return NextResponse.json(
     {

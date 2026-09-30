@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const booking = createRepairBooking(parsed.data);
+  const booking = await createRepairBooking(parsed.data);
 
   return NextResponse.json(
     {

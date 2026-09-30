@@ -14,18 +14,13 @@ export default async function EditCatalogueItemPage({
 }: {
   params: { id: string };
 }) {
-  requireAdmin();
+  await requireAdmin();
 
-  const row = getCatalogueRow(params.id);
+  const row = await getCatalogueRow(params.id);
   if (!row) notFound();
 
-  let images: string[] = [];
-  try {
-    const parsed = JSON.parse(row.images);
-    if (Array.isArray(parsed)) images = parsed.filter((x) => typeof x === 'string');
-  } catch {
-    images = [];
-  }
+  // `row.images` is a native array now, not a JSON string.
+  const images: string[] = row.images ?? [];
 
   return (
     <div className="max-w-3xl">

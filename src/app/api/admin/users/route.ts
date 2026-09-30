@@ -9,7 +9,7 @@ const ROLES: Role[] = ['customer', 'admin'];
 
 /** PATCH /api/admin/users -- { userId, role } */
 export async function PATCH(request: Request) {
-  const user = apiUser();
+  const user = await apiUser();
   if (!user) return jsonError('Please sign in.', undefined, 401);
   if (!isAdmin(user)) return jsonError('Admin access required.', undefined, 403);
 
@@ -22,10 +22,11 @@ export async function PATCH(request: Request) {
   if (!ROLES.includes(role)) return jsonError('That role is not valid.');
 
   // Guard against an admin demoting themselves and losing all access.
-  if (userId === currentUser()?.id && role !== 'admin') {
+  const me = await currentUser();
+  if (userId === me?.id && role !== 'admin') {
     return jsonError('You cannot remove your own admin access.');
   }
 
-  setUserRole(userId, role);
+  await setUserRole(userId, role);
   return Response.json({ ok: true });
 }

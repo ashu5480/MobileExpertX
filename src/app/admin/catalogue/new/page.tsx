@@ -7,8 +7,8 @@ export const metadata = { title: 'Add catalogue item', robots: { index: false, f
 
 export const dynamic = 'force-dynamic';
 
-export default function NewCatalogueItemPage() {
-  requireAdmin();
+export default async function NewCatalogueItemPage() {
+  await requireAdmin();
 
   return (
     <div className="max-w-3xl">
